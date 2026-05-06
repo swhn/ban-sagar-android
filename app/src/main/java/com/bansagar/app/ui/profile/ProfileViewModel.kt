@@ -1,0 +1,101 @@
+package com.bansagar.app.ui.profile
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.bansagar.app.data.model.AppUser
+import com.bansagar.app.data.model.UserStats
+import com.bansagar.app.domain.repository.AuthRepository
+import com.bansagar.app.domain.repository.UserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+data class ProfileUiState(
+    val user: AppUser? = null,
+    val stats: UserStats = UserStats(),
+    val isLoading: Boolean = true,
+    val isSaving: Boolean = false,
+    val displayNameInput: String = "",
+    val error: String? = null,
+    val successMessage: String? = null,
+)
+
+@HiltViewModel
+class ProfileViewModel @Inject constructor(
+    private val authRepository: AuthRepository,
+    private val userRepository: UserRepository,
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(ProfileUiState())
+    val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            authRepository.currentUserFlow.collect { user ->
+                _uiState.value = _uiState.value.copy(
+                    user = user,
+                    displayNameInput = user?.displayName ?: "",
+                    isLoading = false,
+                )
+                if (user != null) loadStats(user.id)
+            }
+        }
+    }
+
+    private fun loadStats(userId: String) {
+        viewModelScope.launch {
+            val stats = userRepository.getStats(userId)
+            _uiState.value = _uiState.value.copy(stats = stats)
+        }
+    }
+
+    fun onDisplayNameChange(name: String) {
+        _uiState.value = _uiState.value.copy(displayNameInput = name)
+    }
+
+    fun saveDisplayName() {
+        val user = _uiState.value.user ?: return
+        val name = _uiState.value.displayNameInput.trim()
+        if (name.isEmpty() || name == user.displayName) return
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isSaving = true)
+            try {
+                userRepository.updateDisplayName(user.id, name)
+                _uiState.value = _uiState.value.copy(
+                    isSaving = false,
+                    user = user.copy(displayName = name),
+                    successMessage = "Display name updated",
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isSaving = false, error = e.message)
+            }
+        }
+    }
+
+    fun toggleNsfw(value: Boolean) = updatePrefs { it.copy(showNsfw = value) }
+    fun toggleNotifyApproved(value: Boolean) = updatePrefs { it.copy(notifyApproved = value) }
+    fun toggleNotifyBadges(value: Boolean) = updatePrefs { it.copy(notifyBadges = value) }
+
+    private fun updatePrefs(transform: (AppUser) -> AppUser) {
+        val user = _uiState.value.user ?: return
+        val updated = transform(user)
+        viewModelScope.launch {
+            try {
+                userRepository.updatePreferences(
+                    userId = user.id,
+                    showNsfw = updated.showNsfw,
+                    notifyApproved = updated.notifyApproved,
+                    notifyBadges = updated.notifyBadges,
+                )
+                _uiState.value = _uiState.value.copy(user = updated)
+            } catch (_: Exception) { }
+        }
+    }
+
+    fun dismissMessage() {
+        _uiState.value = _uiState.value.copy(successMessage = null, error = null)
+    }
+}
