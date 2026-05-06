@@ -11,8 +11,3 @@
 -keep,includedescriptorclasses class com.bansagar.app.**$$serializer { *; }
 -keepclassmembers class com.bansagar.app.** { *** Companion; }
 -keepclasseswithmembers class com.bansagar.app.** { kotlinx.serialization.KSerializer serializer(...); }
-
-# Google Credential Manager
--keep class androidx.credentials.** { *; }
--keep class com.google.android.libraries.identity.googleid.** { *; }
--dontwarn com.google.android.libraries.identity.googleid.**

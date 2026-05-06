@@ -5,7 +5,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -13,10 +12,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
-import com.bansagar.app.ui.auth.AuthViewModel
 import com.bansagar.app.ui.contribute.ContributeScreen
 import com.bansagar.app.ui.detail.SlangDetailScreen
-import com.bansagar.app.ui.history.HistoryScreen
 import com.bansagar.app.ui.home.HomeScreen
 import com.bansagar.app.ui.profile.ProfileScreen
 import com.bansagar.app.ui.search.SearchScreen
@@ -26,7 +23,6 @@ object Routes {
     const val SEARCH = "search"
     const val CONTRIBUTE = "contribute"
     const val PROFILE = "profile"
-    const val HISTORY = "history"
     const val SLANG_DETAIL = "slang/{slug}"
 
     fun slangDetail(slug: String) = "slang/$slug"
@@ -37,9 +33,6 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-
-    // Activity-scoped: created here, shared down to all screens that need it
-    val authViewModel: AuthViewModel = hiltViewModel()
 
     val showBottomBar = currentRoute in listOf(
         Routes.HOME, Routes.SEARCH, Routes.CONTRIBUTE, Routes.PROFILE
@@ -77,19 +70,10 @@ fun AppNavigation() {
                 )
             }
             composable(Routes.CONTRIBUTE) {
-                ContributeScreen(
-                    authViewModel = authViewModel,
-                    onNavigateToHistory = { navController.navigate(Routes.HISTORY) },
-                )
+                ContributeScreen()
             }
             composable(Routes.PROFILE) {
-                ProfileScreen(authViewModel = authViewModel)
-            }
-            composable(Routes.HISTORY) {
-                HistoryScreen(
-                    onBack = { navController.popBackStack() },
-                    onSlangClick = { slug -> navController.navigate(Routes.slangDetail(slug)) },
-                )
+                ProfileScreen()
             }
             composable(
                 route = Routes.SLANG_DETAIL,

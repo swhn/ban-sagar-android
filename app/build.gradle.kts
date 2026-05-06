@@ -22,7 +22,6 @@ android {
 
         buildConfigField("String", "SUPABASE_URL", "\"${project.findProperty("SUPABASE_URL") ?: "\"}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${project.findProperty("SUPABASE_ANON_KEY") ?: "\"}\"")
-        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"${project.findProperty("GOOGLE_WEB_CLIENT_ID") ?: "\"}\"")
     }
 
     buildTypes {
@@ -78,7 +77,7 @@ dependencies {
     kapt("com.google.dagger:hilt-compiler:2.53.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
-    // Coil
+    // Coil (image loading)
     implementation("io.coil-kt:coil-compose:2.7.0")
 
     // DataStore
@@ -86,11 +85,6 @@ dependencies {
 
     // Kotlinx Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
-
-    // Google Credential Manager
-    implementation("androidx.credentials:credentials:1.3.0")
-    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
-    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 }
 
 kapt {
