@@ -6,3 +6,7 @@ sdk.dir=/path/to/Android/Sdk
 # Supabase credentials (same as your web app)
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your-anon-key-here
+
+# Google OAuth — use the Web Client ID from Google Cloud Console
+# (the same one used in Supabase Auth → Google provider)
+GOOGLE_WEB_CLIENT_ID=your-google-web-client-id.apps.googleusercontent.com
