@@ -17,17 +17,9 @@ class SlangRepositoryImpl @Inject constructor(
     private val client: SupabaseClient,
 ) : SlangRepository {
 
-    override suspend fun getTrending(
-        timeframe: Timeframe,
-        limit: Int,
-        offset: Int,
-        showNsfw: Boolean,
-    ): List<Slang> {
+    override suspend fun getTrending(timeframe: Timeframe, limit: Int, offset: Int): List<Slang> {
         val all: List<Slang> = client.from("slangs").select {
-            filter {
-                eq("status", "approved")
-                if (!showNsfw) eq("is_nsfw", false)
-            }
+            filter { eq("status", "approved") }
         }.decodeList()
 
         val days = timeframe.days()
@@ -47,50 +39,36 @@ class SlangRepositoryImpl @Inject constructor(
 
     private fun trendingScore(slang: Slang, windowDates: List<String>): Int {
         if (slang.viewHistory.isEmpty()) return 0
-        var score = 0
-        for (date in windowDates) {
-            score += slang.viewHistory[date] ?: 0
-        }
-        return score
+        return windowDates.sumOf { slang.viewHistory[it] ?: 0 }
     }
 
-    override suspend fun getLatest(limit: Int, offset: Int, showNsfw: Boolean): List<Slang> {
+    override suspend fun getLatest(limit: Int, offset: Int): List<Slang> {
         return client.from("slangs").select {
-            filter {
-                eq("status", "approved")
-                if (!showNsfw) eq("is_nsfw", false)
-            }
+            filter { eq("status", "approved") }
             order("created_at", Order.DESCENDING)
             range(offset.toLong(), (offset + limit - 1).toLong())
         }.decodeList()
     }
 
-    override suspend fun getTop(limit: Int, offset: Int, showNsfw: Boolean): List<Slang> {
+    override suspend fun getTop(limit: Int, offset: Int): List<Slang> {
         return client.from("slangs").select {
-            filter {
-                eq("status", "approved")
-                if (!showNsfw) eq("is_nsfw", false)
-            }
+            filter { eq("status", "approved") }
             order("upvotes", Order.DESCENDING)
             range(offset.toLong(), (offset + limit - 1).toLong())
         }.decodeList()
     }
 
-    override suspend fun getRandom(limit: Int, showNsfw: Boolean): List<Slang> {
+    override suspend fun getRandom(limit: Int): List<Slang> {
         val all: List<Slang> = client.from("slangs").select {
-            filter {
-                eq("status", "approved")
-                if (!showNsfw) eq("is_nsfw", false)
-            }
+            filter { eq("status", "approved") }
         }.decodeList()
         return all.shuffled().take(limit)
     }
 
-    override suspend fun search(query: String, showNsfw: Boolean): List<Slang> {
+    override suspend fun search(query: String): List<Slang> {
         return client.from("slangs").select {
             filter {
                 eq("status", "approved")
-                if (!showNsfw) eq("is_nsfw", false)
                 or {
                     ilike("word", "%$query%")
                     ilike("meaning", "%$query%")
@@ -113,9 +91,7 @@ class SlangRepositoryImpl @Inject constructor(
                     filter { eq("id", slug) }
                     limit(1)
                 }.decodeSingleOrNull()
-            } catch (_: Exception) {
-                null
-            }
+            } catch (_: Exception) { null }
         }
     }
 
@@ -127,7 +103,6 @@ class SlangRepositoryImpl @Inject constructor(
             .take(5)
 
         val related = mutableListOf<Slang>()
-
         for (keyword in keywords) {
             if (related.size >= limit) break
             try {

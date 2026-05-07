@@ -11,7 +11,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,6 +19,7 @@ data class SearchUiState(
     val results: List<Slang> = emptyList(),
     val isSearching: Boolean = false,
     val hasSearched: Boolean = false,
+    val showNsfw: Boolean = false,
 )
 
 @HiltViewModel
@@ -33,21 +33,26 @@ class SearchViewModel @Inject constructor(
 
     private var searchJob: Job? = null
 
+    init {
+        viewModelScope.launch {
+            prefs.showNsfw.collect { show ->
+                _uiState.value = _uiState.value.copy(showNsfw = show)
+            }
+        }
+    }
+
     fun onQueryChange(query: String) {
         _uiState.value = _uiState.value.copy(query = query)
         searchJob?.cancel()
-
         if (query.isBlank()) {
             _uiState.value = _uiState.value.copy(results = emptyList(), hasSearched = false)
             return
         }
-
         searchJob = viewModelScope.launch {
             delay(300)
             _uiState.value = _uiState.value.copy(isSearching = true)
             try {
-                val showNsfw = prefs.showNsfw.first()
-                val results = repository.search(query, showNsfw)
+                val results = repository.search(query)
                 _uiState.value = _uiState.value.copy(
                     results = results,
                     isSearching = false,

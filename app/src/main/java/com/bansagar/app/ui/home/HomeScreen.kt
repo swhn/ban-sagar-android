@@ -122,29 +122,19 @@ fun HomeScreen(
         }
 
         when {
-            state.isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator()
-                }
+            state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
+                CircularProgressIndicator()
             }
-            state.error != null -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = state.error ?: stringResource(R.string.error_generic),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.error,
-                            textAlign = TextAlign.Center,
-                        )
-                        TextButton(onClick = { viewModel.refresh() }) {
-                            Text(stringResource(R.string.retry))
-                        }
+            state.error != null -> Box(Modifier.fillMaxSize(), Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = state.error ?: stringResource(R.string.error_generic),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center,
+                    )
+                    TextButton(onClick = { viewModel.refresh() }) {
+                        Text(stringResource(R.string.retry))
                     }
                 }
             }
@@ -157,9 +147,7 @@ fun HomeScreen(
                         total > 0 && last >= total - 4
                     }
                 }
-                LaunchedEffect(nearBottom) {
-                    if (nearBottom) viewModel.loadMore()
-                }
+                LaunchedEffect(nearBottom) { if (nearBottom) viewModel.loadMore() }
 
                 PullToRefreshBox(
                     isRefreshing = state.isRefreshing,
@@ -169,24 +157,20 @@ fun HomeScreen(
                     LazyColumn(
                         state = listState,
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
-                        items(
-                            items = state.slangs,
-                            key = { it.id },
-                        ) { slang ->
+                        items(items = state.slangs, key = { it.id }) { slang ->
                             SlangCard(
                                 slang = slang,
+                                showNsfw = state.showNsfw,
                                 onClick = { onSlangClick(slang.slug.ifEmpty { slang.id }) },
                             )
                         }
                         if (state.isLoadingMore) {
                             item {
                                 Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    contentAlignment = Alignment.Center,
+                                    Modifier.fillMaxWidth().padding(16.dp),
+                                    Alignment.Center,
                                 ) {
                                     CircularProgressIndicator(modifier = Modifier.size(24.dp))
                                 }

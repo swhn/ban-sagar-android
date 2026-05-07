@@ -10,8 +10,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,6 +24,7 @@ data class HomeUiState(
     val error: String? = null,
     val activeTab: SortTab = SortTab.Trending,
     val activeTimeframe: Timeframe = Timeframe.Month,
+    val showNsfw: Boolean = false,
 )
 
 private const val PAGE_SIZE = 20
@@ -44,7 +43,9 @@ class HomeViewModel @Inject constructor(
     init {
         loadSlangs()
         viewModelScope.launch {
-            prefs.showNsfw.drop(1).collect { loadSlangs() }
+            prefs.showNsfw.collect { show ->
+                _uiState.value = _uiState.value.copy(showNsfw = show)
+            }
         }
     }
 
@@ -57,9 +58,7 @@ class HomeViewModel @Inject constructor(
     fun selectTimeframe(timeframe: Timeframe) {
         if (_uiState.value.activeTimeframe == timeframe) return
         _uiState.value = _uiState.value.copy(activeTimeframe = timeframe)
-        if (_uiState.value.activeTab == SortTab.Trending) {
-            loadSlangs()
-        }
+        if (_uiState.value.activeTab == SortTab.Trending) loadSlangs()
     }
 
     fun refresh() {
@@ -90,11 +89,7 @@ class HomeViewModel @Inject constructor(
     private fun loadSlangs() {
         currentOffset = 0
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(
-                isLoading = true,
-                error = null,
-                canLoadMore = true,
-            )
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null, canLoadMore = true)
             try {
                 val s = _uiState.value
                 val slangs = fetchForTab(s.activeTab, s.activeTimeframe, PAGE_SIZE, 0)
@@ -115,18 +110,11 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private suspend fun fetchForTab(
-        tab: SortTab,
-        timeframe: Timeframe,
-        limit: Int,
-        offset: Int,
-    ): List<Slang> {
-        val showNsfw = prefs.showNsfw.first()
-        return when (tab) {
-            SortTab.Trending -> repository.getTrending(timeframe, limit, offset, showNsfw)
-            SortTab.Latest -> repository.getLatest(limit, offset, showNsfw)
-            SortTab.Top -> repository.getTop(limit, offset, showNsfw)
-            SortTab.Random -> repository.getRandom(limit, showNsfw)
+    private suspend fun fetchForTab(tab: SortTab, timeframe: Timeframe, limit: Int, offset: Int): List<Slang> =
+        when (tab) {
+            SortTab.Trending -> repository.getTrending(timeframe, limit, offset)
+            SortTab.Latest -> repository.getLatest(limit, offset)
+            SortTab.Top -> repository.getTop(limit, offset)
+            SortTab.Random -> repository.getRandom(limit)
         }
-    }
 }

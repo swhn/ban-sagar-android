@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bansagar.app.data.model.Slang
+import com.bansagar.app.data.preferences.UserPreferencesRepository
 import com.bansagar.app.domain.repository.SlangRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,12 +18,14 @@ data class DetailUiState(
     val relatedWords: List<Slang> = emptyList(),
     val isLoading: Boolean = true,
     val error: String? = null,
+    val showNsfw: Boolean = false,
 )
 
 @HiltViewModel
 class SlangDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val repository: SlangRepository,
+    private val prefs: UserPreferencesRepository,
 ) : ViewModel() {
 
     private val slug: String = savedStateHandle["slug"] ?: ""
@@ -32,6 +35,11 @@ class SlangDetailViewModel @Inject constructor(
 
     init {
         loadSlang()
+        viewModelScope.launch {
+            prefs.showNsfw.collect { show ->
+                _uiState.value = _uiState.value.copy(showNsfw = show)
+            }
+        }
     }
 
     private fun loadSlang() {
@@ -39,14 +47,14 @@ class SlangDetailViewModel @Inject constructor(
             try {
                 val slang = repository.getBySlug(slug)
                 if (slang != null) {
-                    _uiState.value = DetailUiState(slang = slang, isLoading = false)
+                    _uiState.value = _uiState.value.copy(slang = slang, isLoading = false)
                     repository.incrementView(slang.id)
                     loadRelated(slang)
                 } else {
-                    _uiState.value = DetailUiState(error = "Word not found", isLoading = false)
+                    _uiState.value = _uiState.value.copy(error = "Word not found", isLoading = false)
                 }
             } catch (e: Exception) {
-                _uiState.value = DetailUiState(error = e.message, isLoading = false)
+                _uiState.value = _uiState.value.copy(error = e.message, isLoading = false)
             }
         }
     }

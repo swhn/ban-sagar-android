@@ -28,8 +28,11 @@
     <string name="error_generic">Something went wrong</string>
     <string name="retry">Retry</string>
     <string name="settings">Settings</string>
-    <string name="show_nsfw">Show adult content</string>
-    <string name="show_nsfw_desc">Display words marked as 18+</string>
+    <string name="show_sensitive">Show Sensitive Content</string>
+    <string name="show_sensitive_desc">Sign in to enable (coming in Phase 2)</string>
     <string name="profile_sign_in_prompt">Sign in with Google to manage your profile</string>
     <string name="coming_phase2">Google sign-in coming in Phase 2</string>
+    <string name="nsfw_gate_title">Sensitive Content</string>
+    <string name="nsfw_gate_desc">Enable "Show Sensitive Content" in Profile → Settings to view this word.</string>
+    <string name="nsfw_gate_phase2">Sign-in required — coming in Phase 2</string>
 </resources>

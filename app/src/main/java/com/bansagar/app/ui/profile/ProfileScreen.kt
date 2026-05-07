@@ -39,7 +39,6 @@ fun ProfileScreen(
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
     ) {
-        // Account header
         Surface(color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)) {
             Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 28.dp)) {
                 Icon(
@@ -71,7 +70,6 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Settings section header
         Text(
             text = stringResource(R.string.settings),
             style = MaterialTheme.typography.labelLarge,
@@ -82,24 +80,22 @@ fun ProfileScreen(
         HorizontalDivider()
 
         ListItem(
-            headlineContent = { Text(stringResource(R.string.show_nsfw)) },
+            headlineContent = { Text(stringResource(R.string.show_sensitive)) },
             supportingContent = {
                 Text(
-                    text = stringResource(R.string.show_nsfw_desc),
+                    text = stringResource(R.string.show_sensitive_desc),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             },
             leadingContent = {
-                Icon(
-                    imageVector = Icons.Outlined.Tune,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Icon(Icons.Outlined.Tune, contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant)
             },
             trailingContent = {
                 Switch(
                     checked = showNsfw,
-                    onCheckedChange = viewModel::setShowNsfw,
+                    onCheckedChange = null,
+                    enabled = false,
                 )
             },
         )
