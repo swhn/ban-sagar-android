@@ -3,6 +3,7 @@ package com.bansagar.app.ui.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bansagar.app.data.model.Slang
+import com.bansagar.app.data.preferences.UserPreferencesRepository
 import com.bansagar.app.domain.repository.SlangRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -10,6 +11,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,6 +25,7 @@ data class SearchUiState(
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val repository: SlangRepository,
+    private val prefs: UserPreferencesRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SearchUiState())
@@ -43,7 +46,8 @@ class SearchViewModel @Inject constructor(
             delay(300)
             _uiState.value = _uiState.value.copy(isSearching = true)
             try {
-                val results = repository.search(query)
+                val showNsfw = prefs.showNsfw.first()
+                val results = repository.search(query, showNsfw)
                 _uiState.value = _uiState.value.copy(
                     results = results,
                     isSearching = false,

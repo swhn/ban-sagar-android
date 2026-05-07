@@ -3,11 +3,14 @@ package com.bansagar.app.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bansagar.app.data.model.Slang
+import com.bansagar.app.data.preferences.UserPreferencesRepository
 import com.bansagar.app.domain.repository.SlangRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,6 +31,7 @@ private const val PAGE_SIZE = 20
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: SlangRepository,
+    private val prefs: UserPreferencesRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -37,6 +41,9 @@ class HomeViewModel @Inject constructor(
 
     init {
         loadSlangs()
+        viewModelScope.launch {
+            prefs.showNsfw.drop(1).collect { loadSlangs() }
+        }
     }
 
     fun selectTab(tab: SortTab) {
@@ -97,11 +104,13 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private suspend fun fetchForTab(tab: SortTab, limit: Int, offset: Int): List<Slang> =
-        when (tab) {
-            SortTab.Trending -> repository.getTrending(limit, offset)
-            SortTab.Latest -> repository.getLatest(limit, offset)
-            SortTab.Top -> repository.getTop(limit, offset)
-            SortTab.Random -> repository.getRandom(limit)
+    private suspend fun fetchForTab(tab: SortTab, limit: Int, offset: Int): List<Slang> {
+        val showNsfw = prefs.showNsfw.first()
+        return when (tab) {
+            SortTab.Trending -> repository.getTrending(limit, offset, showNsfw)
+            SortTab.Latest -> repository.getLatest(limit, offset, showNsfw)
+            SortTab.Top -> repository.getTop(limit, offset, showNsfw)
+            SortTab.Random -> repository.getRandom(limit, showNsfw)
         }
+    }
 }

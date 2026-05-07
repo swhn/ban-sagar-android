@@ -1,11 +1,17 @@
 package com.bansagar.app.di
 
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.preferencesDataStoreFile
 import com.bansagar.app.BuildConfig
 import com.bansagar.app.data.repository.SlangRepositoryImpl
 import com.bansagar.app.domain.repository.SlangRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.createSupabaseClient
@@ -38,4 +44,11 @@ object AppModule {
     fun provideSlangRepository(client: SupabaseClient): SlangRepository {
         return SlangRepositoryImpl(client)
     }
+
+    @Provides
+    @Singleton
+    fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> =
+        PreferenceDataStoreFactory.create(
+            produceFile = { context.preferencesDataStoreFile("user_prefs") },
+        )
 }

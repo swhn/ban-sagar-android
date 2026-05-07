@@ -14,41 +14,54 @@ class SlangRepositoryImpl @Inject constructor(
     private val client: SupabaseClient,
 ) : SlangRepository {
 
-    override suspend fun getTrending(limit: Int, offset: Int): List<Slang> {
+    override suspend fun getTrending(limit: Int, offset: Int, showNsfw: Boolean): List<Slang> {
         return client.from("slangs").select {
-            filter { eq("status", "approved") }
+            filter {
+                eq("status", "approved")
+                if (!showNsfw) eq("is_nsfw", false)
+            }
             order("upvotes", Order.DESCENDING)
             range(offset.toLong(), (offset + limit - 1).toLong())
         }.decodeList()
     }
 
-    override suspend fun getLatest(limit: Int, offset: Int): List<Slang> {
+    override suspend fun getLatest(limit: Int, offset: Int, showNsfw: Boolean): List<Slang> {
         return client.from("slangs").select {
-            filter { eq("status", "approved") }
+            filter {
+                eq("status", "approved")
+                if (!showNsfw) eq("is_nsfw", false)
+            }
             order("created_at", Order.DESCENDING)
             range(offset.toLong(), (offset + limit - 1).toLong())
         }.decodeList()
     }
 
-    override suspend fun getTop(limit: Int, offset: Int): List<Slang> {
+    override suspend fun getTop(limit: Int, offset: Int, showNsfw: Boolean): List<Slang> {
         return client.from("slangs").select {
-            filter { eq("status", "approved") }
+            filter {
+                eq("status", "approved")
+                if (!showNsfw) eq("is_nsfw", false)
+            }
             order("views", Order.DESCENDING)
             range(offset.toLong(), (offset + limit - 1).toLong())
         }.decodeList()
     }
 
-    override suspend fun getRandom(limit: Int): List<Slang> {
+    override suspend fun getRandom(limit: Int, showNsfw: Boolean): List<Slang> {
         val all: List<Slang> = client.from("slangs").select {
-            filter { eq("status", "approved") }
+            filter {
+                eq("status", "approved")
+                if (!showNsfw) eq("is_nsfw", false)
+            }
         }.decodeList()
         return all.shuffled().take(limit)
     }
 
-    override suspend fun search(query: String): List<Slang> {
+    override suspend fun search(query: String, showNsfw: Boolean): List<Slang> {
         return client.from("slangs").select {
             filter {
                 eq("status", "approved")
+                if (!showNsfw) eq("is_nsfw", false)
                 or {
                     ilike("word", "%$query%")
                     ilike("meaning", "%$query%")

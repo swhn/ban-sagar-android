@@ -23,4 +23,9 @@
     <string name="loading">Loading…</string>
     <string name="error_generic">Something went wrong</string>
     <string name="retry">Retry</string>
+    <string name="settings">Settings</string>
+    <string name="show_nsfw">Show adult content</string>
+    <string name="show_nsfw_desc">Display words marked as 18+</string>
+    <string name="profile_sign_in_prompt">Sign in with Google to manage your profile</string>
+    <string name="coming_phase2">Google sign-in coming in Phase 2</string>
 </resources>
