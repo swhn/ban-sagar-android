@@ -6,7 +6,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("com.google.dagger.hilt.android")
-    kotlin("kapt")
+    id("com.google.devtools.ksp")
 }
 
 val localProperties = Properties()
@@ -84,7 +84,7 @@ dependencies {
 
     // Hilt
     implementation("com.google.dagger:hilt-android:2.53.1")
-    kapt("com.google.dagger:hilt-compiler:2.53.1")
+    ksp("com.google.dagger:hilt-compiler:2.53.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Coil (image loading)
@@ -95,8 +95,4 @@ dependencies {
 
     // Kotlinx Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
-}
-
-kapt {
-    correctErrorTypes = true
 }
