@@ -10,6 +10,10 @@
     <string name="tab_latest">Latest</string>
     <string name="tab_top">Top</string>
     <string name="tab_random">Random</string>
+    <string name="tf_day">24h</string>
+    <string name="tf_week">Week</string>
+    <string name="tf_month">Month</string>
+    <string name="tf_year">Year</string>
     <string name="meaning">Meaning</string>
     <string name="meaning_burmese">Burmese Meaning</string>
     <string name="examples">Examples</string>

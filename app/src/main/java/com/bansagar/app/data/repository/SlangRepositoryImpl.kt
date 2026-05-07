@@ -1,6 +1,7 @@
 package com.bansagar.app.data.repository
 
 import com.bansagar.app.data.model.Slang
+import com.bansagar.app.domain.model.Timeframe
 import com.bansagar.app.domain.repository.SlangRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
@@ -14,13 +15,20 @@ class SlangRepositoryImpl @Inject constructor(
     private val client: SupabaseClient,
 ) : SlangRepository {
 
-    override suspend fun getTrending(limit: Int, offset: Int, showNsfw: Boolean): List<Slang> {
+    override suspend fun getTrending(
+        timeframe: Timeframe,
+        limit: Int,
+        offset: Int,
+        showNsfw: Boolean,
+    ): List<Slang> {
+        val cutoff = timeframe.cutoffIso()
         return client.from("slangs").select {
             filter {
                 eq("status", "approved")
                 if (!showNsfw) eq("is_nsfw", false)
+                gte("created_at", cutoff)
             }
-            order("upvotes", Order.DESCENDING)
+            order("views", Order.DESCENDING)
             range(offset.toLong(), (offset + limit - 1).toLong())
         }.decodeList()
     }
@@ -42,7 +50,7 @@ class SlangRepositoryImpl @Inject constructor(
                 eq("status", "approved")
                 if (!showNsfw) eq("is_nsfw", false)
             }
-            order("views", Order.DESCENDING)
+            order("upvotes", Order.DESCENDING)
             range(offset.toLong(), (offset + limit - 1).toLong())
         }.decodeList()
     }

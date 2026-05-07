@@ -1,9 +1,12 @@
 package com.bansagar.app.ui.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -32,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bansagar.app.R
+import com.bansagar.app.domain.model.Timeframe
 import com.bansagar.app.ui.components.SlangCard
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,6 +89,35 @@ fun HomeScreen(
                     },
                     modifier = Modifier.padding(horizontal = 4.dp),
                 )
+            }
+        }
+
+        AnimatedVisibility(visible = state.activeTab == SortTab.Trending) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Timeframe.entries.forEach { tf ->
+                    val selected = tf == state.activeTimeframe
+                    FilterChip(
+                        selected = selected,
+                        onClick = { viewModel.selectTimeframe(tf) },
+                        label = {
+                            Text(
+                                text = when (tf) {
+                                    Timeframe.Day -> stringResource(R.string.tf_day)
+                                    Timeframe.Week -> stringResource(R.string.tf_week)
+                                    Timeframe.Month -> stringResource(R.string.tf_month)
+                                    Timeframe.Year -> stringResource(R.string.tf_year)
+                                },
+                                style = MaterialTheme.typography.labelMedium,
+                            )
+                        },
+                    )
+                }
             }
         }
 
