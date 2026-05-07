@@ -55,15 +55,18 @@ fun SlangDetailScreen(
     viewModel: SlangDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val slang = state.slang
     val context = LocalContext.current
+
+    val isBlurred = slang != null && slang.isNsfw && !state.showNsfw
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
             title = {
                 val title = when {
-                    state.slang == null -> ""
-                    state.slang.isNsfw && !state.showNsfw -> "••••••"
-                    else -> state.slang.word
+                    slang == null -> ""
+                    isBlurred -> "••••••"
+                    else -> slang.word
                 }
                 Text(text = title, fontWeight = FontWeight.SemiBold)
             },
@@ -73,11 +76,10 @@ fun SlangDetailScreen(
                 }
             },
             actions = {
-                if (state.slang != null && (state.showNsfw || !state.slang.isNsfw)) {
+                if (slang != null && !isBlurred) {
                     IconButton(onClick = {
-                        val s = state.slang!!
-                        val shareUrl = "https://bansagar.com/slang/${s.slug.ifEmpty { s.id }}"
-                        val shareText = "${s.word} — ${s.meaning}\n$shareUrl"
+                        val shareUrl = "https://bansagar.com/slang/${slang.slug.ifEmpty { slang.id }}"
+                        val shareText = "${slang.word} — ${slang.meaning}\n$shareUrl"
                         val intent = Intent(Intent.ACTION_SEND).apply {
                             type = "text/plain"
                             putExtra(Intent.EXTRA_TEXT, shareText)
@@ -98,160 +100,154 @@ fun SlangDetailScreen(
                 Text(state.error ?: stringResource(R.string.error_generic),
                     color = MaterialTheme.colorScheme.error)
             }
-            state.slang != null -> {
-                val slang = state.slang!!
-                val isBlurred = slang.isNsfw && !state.showNsfw
-
-                if (isBlurred) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Column(
-                            modifier = Modifier.padding(40.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Lock,
-                                contentDescription = null,
-                                modifier = Modifier.size(48.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                            )
+            slang != null && isBlurred -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(
+                        modifier = Modifier.padding(40.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Lock,
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                        )
+                        Text(
+                            text = stringResource(R.string.nsfw_gate_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center,
+                        )
+                        Text(
+                            text = stringResource(R.string.nsfw_gate_desc),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                        )
+                        Text(
+                            text = stringResource(R.string.nsfw_gate_phase2),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.outline,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+            }
+            slang != null -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                        ),
+                        shape = MaterialTheme.shapes.extraLarge,
+                    ) {
+                        Column(modifier = Modifier.padding(20.dp)) {
                             Text(
-                                text = stringResource(R.string.nsfw_gate_title),
+                                text = slang.word,
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                            if (slang.pronunciation != null) {
+                                Text(
+                                    text = "/${slang.pronunciation}/",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    fontStyle = FontStyle.Italic,
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Icon(Icons.Outlined.ThumbUp, null, Modifier.size(16.dp),
+                                        tint = MaterialTheme.colorScheme.primary)
+                                    Text("${slang.upvotes}",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = MaterialTheme.colorScheme.primary)
+                                }
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Icon(Icons.Outlined.Visibility, null, Modifier.size(16.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text("${slang.views}",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            }
+                        }
+                    }
+
+                    if (slang.meaning.isNotBlank()) {
+                        SectionCard(title = stringResource(R.string.meaning)) {
+                            Text(slang.meaning,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
+                    if (!slang.meaningBurmese.isNullOrBlank()) {
+                        SectionCard(title = stringResource(R.string.meaning_burmese)) {
+                            Text(slang.meaningBurmese,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
+                    if (slang.examples.isNotEmpty()) {
+                        SectionCard(title = stringResource(R.string.examples)) {
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                slang.examples.forEach { example ->
+                                    Text("\""+example+"\"",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontStyle = FontStyle.Italic)
+                                }
+                            }
+                        }
+                    }
+                    if (state.relatedWords.isNotEmpty()) {
+                        Column {
+                            Text(
+                                text = stringResource(R.string.related_words),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
-                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(bottom = 8.dp),
                             )
-                            Text(
-                                text = stringResource(R.string.nsfw_gate_desc),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center,
-                            )
-                            Text(
-                                text = stringResource(R.string.nsfw_gate_phase2),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.outline,
-                                textAlign = TextAlign.Center,
-                            )
-                        }
-                    }
-                } else {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .verticalScroll(rememberScrollState())
-                            .padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                    ) {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
-                            ),
-                            shape = MaterialTheme.shapes.extraLarge,
-                        ) {
-                            Column(modifier = Modifier.padding(20.dp)) {
-                                Text(
-                                    text = slang.word,
-                                    style = MaterialTheme.typography.headlineMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                )
-                                if (slang.pronunciation != null) {
-                                    Text(
-                                        text = "/${slang.pronunciation}/",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.secondary,
-                                        fontStyle = FontStyle.Italic,
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                state.relatedWords.forEach { related ->
+                                    AssistChip(
+                                        onClick = { onSlangClick(related.slug.ifEmpty { related.id }) },
+                                        label = {
+                                            Column {
+                                                Text(related.word,
+                                                    style = MaterialTheme.typography.labelLarge)
+                                                Text(related.meaning,
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            }
+                                        },
                                     )
                                 }
-                                Spacer(modifier = Modifier.height(12.dp))
-                                Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                    ) {
-                                        Icon(Icons.Outlined.ThumbUp, null,
-                                            Modifier.size(16.dp),
-                                            tint = MaterialTheme.colorScheme.primary)
-                                        Text("${slang.upvotes}",
-                                            style = MaterialTheme.typography.labelLarge,
-                                            color = MaterialTheme.colorScheme.primary)
-                                    }
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                    ) {
-                                        Icon(Icons.Outlined.Visibility, null,
-                                            Modifier.size(16.dp),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                                        Text("${slang.views}",
-                                            style = MaterialTheme.typography.labelLarge,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    }
-                                }
                             }
                         }
-
-                        if (slang.meaning.isNotBlank()) {
-                            SectionCard(title = stringResource(R.string.meaning)) {
-                                Text(slang.meaning,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface)
-                            }
-                        }
-                        if (!slang.meaningBurmese.isNullOrBlank()) {
-                            SectionCard(title = stringResource(R.string.meaning_burmese)) {
-                                Text(slang.meaningBurmese,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface)
-                            }
-                        }
-                        if (slang.examples.isNotEmpty()) {
-                            SectionCard(title = stringResource(R.string.examples)) {
-                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    slang.examples.forEach { example ->
-                                        Text("\""+example+"\"",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            fontStyle = FontStyle.Italic)
-                                    }
-                                }
-                            }
-                        }
-                        if (state.relatedWords.isNotEmpty()) {
-                            Column {
-                                Text(
-                                    text = stringResource(R.string.related_words),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    modifier = Modifier.padding(bottom = 8.dp),
-                                )
-                                FlowRow(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                ) {
-                                    state.relatedWords.forEach { related ->
-                                        AssistChip(
-                                            onClick = { onSlangClick(related.slug.ifEmpty { related.id }) },
-                                            label = {
-                                                Column {
-                                                    Text(related.word,
-                                                        style = MaterialTheme.typography.labelLarge)
-                                                    Text(related.meaning,
-                                                        style = MaterialTheme.typography.labelSmall,
-                                                        maxLines = 1,
-                                                        overflow = TextOverflow.Ellipsis,
-                                                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                                }
-                                            },
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
                     }
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }
