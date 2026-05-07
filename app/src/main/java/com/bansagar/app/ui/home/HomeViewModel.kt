@@ -17,9 +17,13 @@ data class HomeUiState(
     val slangs: List<Slang> = emptyList(),
     val isLoading: Boolean = true,
     val isRefreshing: Boolean = false,
+    val isLoadingMore: Boolean = false,
+    val canLoadMore: Boolean = true,
     val error: String? = null,
     val activeTab: SortTab = SortTab.Trending,
 )
+
+private const val PAGE_SIZE = 20
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -29,11 +33,14 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    private var currentOffset = 0
+
     init {
         loadSlangs()
     }
 
     fun selectTab(tab: SortTab) {
+        if (_uiState.value.activeTab == tab) return
         _uiState.value = _uiState.value.copy(activeTab = tab)
         loadSlangs()
     }
@@ -43,20 +50,42 @@ class HomeViewModel @Inject constructor(
         loadSlangs()
     }
 
-    private fun loadSlangs() {
+    fun loadMore() {
+        val state = _uiState.value
+        if (state.isLoading || state.isLoadingMore || !state.canLoadMore ||
+            state.activeTab == SortTab.Random) return
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = _uiState.value.slangs.isEmpty(), error = null)
+            _uiState.value = _uiState.value.copy(isLoadingMore = true)
             try {
-                val slangs = when (_uiState.value.activeTab) {
-                    SortTab.Trending -> repository.getTrending()
-                    SortTab.Latest -> repository.getLatest()
-                    SortTab.Top -> repository.getTop()
-                    SortTab.Random -> repository.getRandom()
-                }
+                val newItems = fetchForTab(state.activeTab, PAGE_SIZE, currentOffset)
+                currentOffset += newItems.size
+                _uiState.value = _uiState.value.copy(
+                    slangs = state.slangs + newItems,
+                    isLoadingMore = false,
+                    canLoadMore = newItems.size == PAGE_SIZE,
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isLoadingMore = false)
+            }
+        }
+    }
+
+    private fun loadSlangs() {
+        currentOffset = 0
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(
+                isLoading = true,
+                error = null,
+                canLoadMore = true,
+            )
+            try {
+                val slangs = fetchForTab(_uiState.value.activeTab, PAGE_SIZE, 0)
+                currentOffset = slangs.size
                 _uiState.value = _uiState.value.copy(
                     slangs = slangs,
                     isLoading = false,
                     isRefreshing = false,
+                    canLoadMore = slangs.size == PAGE_SIZE && _uiState.value.activeTab != SortTab.Random,
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
@@ -67,4 +96,12 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
+    private suspend fun fetchForTab(tab: SortTab, limit: Int, offset: Int): List<Slang> =
+        when (tab) {
+            SortTab.Trending -> repository.getTrending(limit, offset)
+            SortTab.Latest -> repository.getLatest(limit, offset)
+            SortTab.Top -> repository.getTop(limit, offset)
+            SortTab.Random -> repository.getRandom(limit)
+        }
 }

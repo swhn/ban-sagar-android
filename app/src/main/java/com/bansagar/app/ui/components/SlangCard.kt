@@ -71,24 +71,8 @@ fun SlangCard(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                StatChip(
-                    icon = Icons.Outlined.ThumbUp,
-                    count = slang.upvotes,
-                )
-                StatChip(
-                    icon = Icons.Outlined.Visibility,
-                    count = slang.views,
-                )
-                if (slang.authorName != null) {
-                    Text(
-                        text = slang.authorName,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                        modifier = Modifier.weight(1f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
+                StatChip(icon = Icons.Outlined.ThumbUp, count = slang.upvotes)
+                StatChip(icon = Icons.Outlined.Visibility, count = slang.views)
             }
         }
     }

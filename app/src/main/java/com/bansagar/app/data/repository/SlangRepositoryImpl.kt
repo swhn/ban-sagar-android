@@ -14,27 +14,27 @@ class SlangRepositoryImpl @Inject constructor(
     private val client: SupabaseClient,
 ) : SlangRepository {
 
-    override suspend fun getTrending(limit: Int): List<Slang> {
+    override suspend fun getTrending(limit: Int, offset: Int): List<Slang> {
         return client.from("slangs").select {
             filter { eq("status", "approved") }
             order("upvotes", Order.DESCENDING)
-            limit(limit.toLong())
+            range(offset.toLong(), (offset + limit - 1).toLong())
         }.decodeList()
     }
 
-    override suspend fun getLatest(limit: Int): List<Slang> {
+    override suspend fun getLatest(limit: Int, offset: Int): List<Slang> {
         return client.from("slangs").select {
             filter { eq("status", "approved") }
             order("created_at", Order.DESCENDING)
-            limit(limit.toLong())
+            range(offset.toLong(), (offset + limit - 1).toLong())
         }.decodeList()
     }
 
-    override suspend fun getTop(limit: Int): List<Slang> {
+    override suspend fun getTop(limit: Int, offset: Int): List<Slang> {
         return client.from("slangs").select {
             filter { eq("status", "approved") }
             order("views", Order.DESCENDING)
-            limit(limit.toLong())
+            range(offset.toLong(), (offset + limit - 1).toLong())
         }.decodeList()
     }
 
@@ -98,9 +98,7 @@ class SlangRepositoryImpl @Inject constructor(
                     limit(limit.toLong())
                 }.decodeList()
                 for (item in results) {
-                    if (related.none { it.id == item.id }) {
-                        related.add(item)
-                    }
+                    if (related.none { it.id == item.id }) related.add(item)
                 }
             } catch (_: Exception) { }
         }
@@ -116,9 +114,7 @@ class SlangRepositoryImpl @Inject constructor(
                     limit(limit.toLong())
                 }.decodeList()
                 for (item in popular) {
-                    if (related.none { it.id == item.id }) {
-                        related.add(item)
-                    }
+                    if (related.none { it.id == item.id }) related.add(item)
                 }
             } catch (_: Exception) { }
         }
