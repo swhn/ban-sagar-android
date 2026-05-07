@@ -9,6 +9,8 @@ import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import java.time.LocalDate
+import java.time.ZoneOffset
 import javax.inject.Inject
 
 class SlangRepositoryImpl @Inject constructor(
@@ -21,16 +23,35 @@ class SlangRepositoryImpl @Inject constructor(
         offset: Int,
         showNsfw: Boolean,
     ): List<Slang> {
-        val cutoff = timeframe.cutoffIso()
-        return client.from("slangs").select {
+        val all: List<Slang> = client.from("slangs").select {
             filter {
                 eq("status", "approved")
                 if (!showNsfw) eq("is_nsfw", false)
-                gte("created_at", cutoff)
             }
-            order("views", Order.DESCENDING)
-            range(offset.toLong(), (offset + limit - 1).toLong())
         }.decodeList()
+
+        val days = timeframe.days()
+        val today = LocalDate.now(ZoneOffset.UTC)
+        val windowDates: List<String> = (0 until days).map { i ->
+            today.minusDays(i.toLong()).toString()
+        }
+
+        return all
+            .map { slang -> slang to trendingScore(slang, windowDates) }
+            .filter { it.second > 0 }
+            .sortedByDescending { it.second }
+            .map { it.first }
+            .drop(offset)
+            .take(limit)
+    }
+
+    private fun trendingScore(slang: Slang, windowDates: List<String>): Int {
+        if (slang.viewHistory.isEmpty()) return 0
+        var score = 0
+        for (date in windowDates) {
+            score += slang.viewHistory[date] ?: 0
+        }
+        return score
     }
 
     override suspend fun getLatest(limit: Int, offset: Int, showNsfw: Boolean): List<Slang> {
