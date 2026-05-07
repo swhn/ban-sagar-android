@@ -128,7 +128,7 @@ class SlangRepositoryImpl @Inject constructor(
 
     override suspend fun incrementView(slangId: String) {
         try {
-            client.postgrest.rpc("increment_view", buildJsonObject {
+            client.rpc("increment_view", buildJsonObject {
                 put("p_slang_id", slangId)
             })
         } catch (_: Exception) { }
