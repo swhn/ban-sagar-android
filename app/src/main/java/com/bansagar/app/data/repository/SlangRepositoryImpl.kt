@@ -4,8 +4,8 @@ import com.bansagar.app.data.model.Slang
 import com.bansagar.app.domain.repository.SlangRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Order
-import io.github.jan.supabase.postgrest.rpc
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import javax.inject.Inject
@@ -128,7 +128,7 @@ class SlangRepositoryImpl @Inject constructor(
 
     override suspend fun incrementView(slangId: String) {
         try {
-            client.rpc("increment_view", buildJsonObject {
+            client.postgrest.rpc("increment_view", buildJsonObject {
                 put("p_slang_id", slangId)
             })
         } catch (_: Exception) { }
