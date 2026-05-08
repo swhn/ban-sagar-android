@@ -4,12 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bansagar.app.data.model.AppUser
 import com.bansagar.app.data.model.UserStats
+import com.bansagar.app.data.preferences.UserPreferencesRepository
 import com.bansagar.app.domain.repository.AuthRepository
 import com.bansagar.app.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -27,10 +30,17 @@ data class ProfileUiState(
 class ProfileViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val userRepository: UserRepository,
+    private val prefs: UserPreferencesRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
+
+    val showNsfw: StateFlow<Boolean> = prefs.showNsfw.stateIn(
+        viewModelScope,
+        SharingStarted.Eagerly,
+        false,
+    )
 
     init {
         viewModelScope.launch {
@@ -40,7 +50,11 @@ class ProfileViewModel @Inject constructor(
                     displayNameInput = user?.displayName ?: "",
                     isLoading = false,
                 )
-                if (user != null) loadStats(user.id)
+                if (user != null) {
+                    loadStats(user.id)
+                    // Sync server-side preference to local DataStore on sign-in
+                    prefs.setShowNsfw(user.showNsfw)
+                }
             }
         }
     }
@@ -75,7 +89,23 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun toggleNsfw(value: Boolean) = updatePrefs { it.copy(showNsfw = value) }
+    fun setShowNsfw(value: Boolean) {
+        viewModelScope.launch {
+            prefs.setShowNsfw(value)
+            // Persist to user profile too if signed in
+            val user = _uiState.value.user ?: return@launch
+            try {
+                userRepository.updatePreferences(
+                    userId = user.id,
+                    showNsfw = value,
+                    notifyApproved = user.notifyApproved,
+                    notifyBadges = user.notifyBadges,
+                )
+                _uiState.value = _uiState.value.copy(user = user.copy(showNsfw = value))
+            } catch (_: Exception) { }
+        }
+    }
+
     fun toggleNotifyApproved(value: Boolean) = updatePrefs { it.copy(notifyApproved = value) }
     fun toggleNotifyBadges(value: Boolean) = updatePrefs { it.copy(notifyBadges = value) }
 

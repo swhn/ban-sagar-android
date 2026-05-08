@@ -52,6 +52,7 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val showNsfw by viewModel.showNsfw.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     if (!state.isLoading && state.user == null) {
@@ -191,7 +192,7 @@ fun ProfileScreen(
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(bottom = 4.dp),
                 )
-                PrefRow(stringResource(R.string.pref_show_nsfw), user.showNsfw, viewModel::toggleNsfw)
+                PrefRow(stringResource(R.string.show_sensitive), showNsfw, viewModel::setShowNsfw)
                 HorizontalDivider()
                 PrefRow(stringResource(R.string.pref_notify_approved), user.notifyApproved, viewModel::toggleNotifyApproved)
                 HorizontalDivider()
