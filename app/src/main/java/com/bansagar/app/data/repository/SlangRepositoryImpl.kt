@@ -1,6 +1,7 @@
 package com.bansagar.app.data.repository
 
 import com.bansagar.app.data.model.Slang
+import com.bansagar.app.domain.model.Timeframe
 import com.bansagar.app.domain.repository.SlangRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
@@ -8,18 +9,37 @@ import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import java.time.LocalDate
+import java.time.ZoneOffset
 import javax.inject.Inject
 
 class SlangRepositoryImpl @Inject constructor(
     private val client: SupabaseClient,
 ) : SlangRepository {
 
-    override suspend fun getTrending(limit: Int, offset: Int): List<Slang> {
-        return client.from("slangs").select {
+    override suspend fun getTrending(timeframe: Timeframe, limit: Int, offset: Int): List<Slang> {
+        val all: List<Slang> = client.from("slangs").select {
             filter { eq("status", "approved") }
-            order("upvotes", Order.DESCENDING)
-            range(offset.toLong(), (offset + limit - 1).toLong())
         }.decodeList()
+
+        val days = timeframe.days()
+        val today = LocalDate.now(ZoneOffset.UTC)
+        val windowDates: List<String> = (0 until days).map { i ->
+            today.minusDays(i.toLong()).toString()
+        }
+
+        return all
+            .map { slang -> slang to trendingScore(slang, windowDates) }
+            .filter { it.second > 0 }
+            .sortedByDescending { it.second }
+            .map { it.first }
+            .drop(offset)
+            .take(limit)
+    }
+
+    private fun trendingScore(slang: Slang, windowDates: List<String>): Int {
+        if (slang.viewHistory.isEmpty()) return 0
+        return windowDates.sumOf { slang.viewHistory[it] ?: 0 }
     }
 
     override suspend fun getLatest(limit: Int, offset: Int): List<Slang> {
@@ -33,7 +53,7 @@ class SlangRepositoryImpl @Inject constructor(
     override suspend fun getTop(limit: Int, offset: Int): List<Slang> {
         return client.from("slangs").select {
             filter { eq("status", "approved") }
-            order("views", Order.DESCENDING)
+            order("upvotes", Order.DESCENDING)
             range(offset.toLong(), (offset + limit - 1).toLong())
         }.decodeList()
     }
@@ -71,9 +91,7 @@ class SlangRepositoryImpl @Inject constructor(
                     filter { eq("id", slug) }
                     limit(1)
                 }.decodeSingleOrNull()
-            } catch (_: Exception) {
-                null
-            }
+            } catch (_: Exception) { null }
         }
     }
 
@@ -85,7 +103,6 @@ class SlangRepositoryImpl @Inject constructor(
             .take(5)
 
         val related = mutableListOf<Slang>()
-
         for (keyword in keywords) {
             if (related.size >= limit) break
             try {

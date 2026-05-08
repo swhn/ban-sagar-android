@@ -1,5 +1,10 @@
 package com.bansagar.app.di
 
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.preferencesDataStoreFile
 import com.bansagar.app.BuildConfig
 import com.bansagar.app.data.repository.AuthRepositoryImpl
 import com.bansagar.app.data.repository.ContributeRepositoryImpl
@@ -16,6 +21,7 @@ import com.bansagar.app.domain.repository.VoteRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
@@ -80,4 +86,11 @@ object AppModule {
     fun provideSiteSettingsRepository(client: SupabaseClient): SiteSettingsRepository {
         return SiteSettingsRepositoryImpl(client)
     }
+
+    @Provides
+    @Singleton
+    fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> =
+        PreferenceDataStoreFactory.create(
+            produceFile = { context.preferencesDataStoreFile("user_prefs") },
+        )
 }
