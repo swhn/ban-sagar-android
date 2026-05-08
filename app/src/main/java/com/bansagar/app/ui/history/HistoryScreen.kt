@@ -94,6 +94,7 @@ fun HistoryScreen(
                     Column {
                         SlangCard(
                             slang = slang,
+                            showNsfw = true,
                             onClick = { onSlangClick(slang.slug.ifEmpty { slang.id }) },
                         )
                         StatusBadge(slang.status)
