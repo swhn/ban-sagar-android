@@ -3,6 +3,8 @@ package com.bansagar.app.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bansagar.app.data.model.Slang
+import com.bansagar.app.data.preferences.UserPreferencesRepository
+import com.bansagar.app.domain.model.Timeframe
 import com.bansagar.app.domain.repository.SlangRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +23,8 @@ data class HomeUiState(
     val canLoadMore: Boolean = true,
     val error: String? = null,
     val activeTab: SortTab = SortTab.Trending,
+    val activeTimeframe: Timeframe = Timeframe.Month,
+    val showNsfw: Boolean = false,
 )
 
 private const val PAGE_SIZE = 20
@@ -28,6 +32,7 @@ private const val PAGE_SIZE = 20
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: SlangRepository,
+    private val prefs: UserPreferencesRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -37,12 +42,23 @@ class HomeViewModel @Inject constructor(
 
     init {
         loadSlangs()
+        viewModelScope.launch {
+            prefs.showNsfw.collect { show ->
+                _uiState.value = _uiState.value.copy(showNsfw = show)
+            }
+        }
     }
 
     fun selectTab(tab: SortTab) {
         if (_uiState.value.activeTab == tab) return
         _uiState.value = _uiState.value.copy(activeTab = tab)
         loadSlangs()
+    }
+
+    fun selectTimeframe(timeframe: Timeframe) {
+        if (_uiState.value.activeTimeframe == timeframe) return
+        _uiState.value = _uiState.value.copy(activeTimeframe = timeframe)
+        if (_uiState.value.activeTab == SortTab.Trending) loadSlangs()
     }
 
     fun refresh() {
@@ -57,7 +73,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoadingMore = true)
             try {
-                val newItems = fetchForTab(state.activeTab, PAGE_SIZE, currentOffset)
+                val newItems = fetchForTab(state.activeTab, state.activeTimeframe, PAGE_SIZE, currentOffset)
                 currentOffset += newItems.size
                 _uiState.value = _uiState.value.copy(
                     slangs = state.slangs + newItems,
@@ -73,19 +89,16 @@ class HomeViewModel @Inject constructor(
     private fun loadSlangs() {
         currentOffset = 0
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(
-                isLoading = true,
-                error = null,
-                canLoadMore = true,
-            )
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null, canLoadMore = true)
             try {
-                val slangs = fetchForTab(_uiState.value.activeTab, PAGE_SIZE, 0)
+                val s = _uiState.value
+                val slangs = fetchForTab(s.activeTab, s.activeTimeframe, PAGE_SIZE, 0)
                 currentOffset = slangs.size
                 _uiState.value = _uiState.value.copy(
                     slangs = slangs,
                     isLoading = false,
                     isRefreshing = false,
-                    canLoadMore = slangs.size == PAGE_SIZE && _uiState.value.activeTab != SortTab.Random,
+                    canLoadMore = slangs.size == PAGE_SIZE && s.activeTab != SortTab.Random,
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
@@ -97,9 +110,9 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private suspend fun fetchForTab(tab: SortTab, limit: Int, offset: Int): List<Slang> =
+    private suspend fun fetchForTab(tab: SortTab, timeframe: Timeframe, limit: Int, offset: Int): List<Slang> =
         when (tab) {
-            SortTab.Trending -> repository.getTrending(limit, offset)
+            SortTab.Trending -> repository.getTrending(timeframe, limit, offset)
             SortTab.Latest -> repository.getLatest(limit, offset)
             SortTab.Top -> repository.getTop(limit, offset)
             SortTab.Random -> repository.getRandom(limit)

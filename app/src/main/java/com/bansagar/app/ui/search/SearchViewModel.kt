@@ -3,6 +3,7 @@ package com.bansagar.app.ui.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bansagar.app.data.model.Slang
+import com.bansagar.app.data.preferences.UserPreferencesRepository
 import com.bansagar.app.domain.repository.SlangRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -18,11 +19,13 @@ data class SearchUiState(
     val results: List<Slang> = emptyList(),
     val isSearching: Boolean = false,
     val hasSearched: Boolean = false,
+    val showNsfw: Boolean = false,
 )
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val repository: SlangRepository,
+    private val prefs: UserPreferencesRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SearchUiState())
@@ -30,15 +33,21 @@ class SearchViewModel @Inject constructor(
 
     private var searchJob: Job? = null
 
+    init {
+        viewModelScope.launch {
+            prefs.showNsfw.collect { show ->
+                _uiState.value = _uiState.value.copy(showNsfw = show)
+            }
+        }
+    }
+
     fun onQueryChange(query: String) {
         _uiState.value = _uiState.value.copy(query = query)
         searchJob?.cancel()
-
         if (query.isBlank()) {
             _uiState.value = _uiState.value.copy(results = emptyList(), hasSearched = false)
             return
         }
-
         searchJob = viewModelScope.launch {
             delay(300)
             _uiState.value = _uiState.value.copy(isSearching = true)
