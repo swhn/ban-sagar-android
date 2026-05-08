@@ -1,9 +1,10 @@
 package com.bansagar.app.domain.repository
 
 import com.bansagar.app.data.model.Slang
+import com.bansagar.app.domain.model.Timeframe
 
 interface SlangRepository {
-    suspend fun getTrending(limit: Int = 20, offset: Int = 0): List<Slang>
+    suspend fun getTrending(timeframe: Timeframe = Timeframe.Month, limit: Int = 20, offset: Int = 0): List<Slang>
     suspend fun getLatest(limit: Int = 20, offset: Int = 0): List<Slang>
     suspend fun getTop(limit: Int = 20, offset: Int = 0): List<Slang>
     suspend fun getRandom(limit: Int = 20): List<Slang>

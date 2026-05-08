@@ -18,6 +18,7 @@ data class Slang(
     val upvotes: Int = 0,
     val downvotes: Int = 0,
     val views: Int = 0,
+    @SerialName("view_history") val viewHistory: Map<String, Int> = emptyMap(),
     @SerialName("is_nsfw") val isNsfw: Boolean = false,
     @SerialName("created_at") val createdAt: String = "",
 )
