@@ -1,5 +1,6 @@
 package com.bansagar.app.ui.profile
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,6 +33,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,6 +58,8 @@ fun ProfileScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val showNsfw by viewModel.showNsfw.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    var signInError by remember { mutableStateOf<String?>(null) }
+    var isSigningIn by remember { mutableStateOf(false) }
 
     if (!state.isLoading && state.user == null) {
         Column(
@@ -74,14 +80,40 @@ fun ProfileScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = 8.dp, bottom = 32.dp),
             )
-            Button(onClick = { authViewModel.signIn(context) { _, _ -> } }) {
-                androidx.compose.material3.Icon(
-                    imageVector = Icons.Outlined.AccountCircle,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
+            Button(
+                onClick = {
+                    isSigningIn = true
+                    signInError = null
+                    authViewModel.signIn(context) { success, error ->
+                        isSigningIn = false
+                        if (!success) {
+                            signInError = error ?: "Sign-in failed"
+                            Toast.makeText(context, signInError, Toast.LENGTH_LONG).show()
+                        }
+                    }
+                },
+                enabled = !isSigningIn,
+            ) {
+                if (isSigningIn) {
+                    CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                } else {
+                    androidx.compose.material3.Icon(
+                        imageVector = Icons.Outlined.AccountCircle,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.sign_in_google))
+                }
+            }
+            signInError?.let { err ->
+                Text(
+                    text = err,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 16.dp),
                 )
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.sign_in_google))
             }
         }
         return
