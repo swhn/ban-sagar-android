@@ -1,6 +1,5 @@
 package com.bansagar.app.ui.profile
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,7 +15,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.NavigateNext
 import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.ExitToApp
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.AssistChip
@@ -33,9 +34,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,17 +47,19 @@ import coil.compose.AsyncImage
 import com.bansagar.app.R
 import com.bansagar.app.ui.auth.AuthViewModel
 import kotlinx.coroutines.delay
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.foundation.clickable
 
 @Composable
 fun ProfileScreen(
     authViewModel: AuthViewModel,
+    onNavigateToLeaderboard: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val showNsfw by viewModel.showNsfw.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    var signInError by remember { mutableStateOf<String?>(null) }
-    var isSigningIn by remember { mutableStateOf(false) }
 
     if (!state.isLoading && state.user == null) {
         Column(
@@ -80,40 +80,14 @@ fun ProfileScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = 8.dp, bottom = 32.dp),
             )
-            Button(
-                onClick = {
-                    isSigningIn = true
-                    signInError = null
-                    authViewModel.signIn(context) { success, error ->
-                        isSigningIn = false
-                        if (!success) {
-                            signInError = error ?: "Sign-in failed"
-                            Toast.makeText(context, signInError, Toast.LENGTH_LONG).show()
-                        }
-                    }
-                },
-                enabled = !isSigningIn,
-            ) {
-                if (isSigningIn) {
-                    CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-                } else {
-                    androidx.compose.material3.Icon(
-                        imageVector = Icons.Outlined.AccountCircle,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.sign_in_google))
-                }
-            }
-            signInError?.let { err ->
-                Text(
-                    text = err,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.error,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 16.dp),
+            Button(onClick = { authViewModel.signIn(context) { _, _ -> } }) {
+                androidx.compose.material3.Icon(
+                    imageVector = Icons.Outlined.AccountCircle,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
                 )
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.sign_in_google))
             }
         }
         return
@@ -181,6 +155,41 @@ fun ProfileScreen(
             StatCard(Modifier.weight(1f), stringResource(R.string.stat_submitted), "${state.stats.submittedCount}")
             StatCard(Modifier.weight(1f), stringResource(R.string.stat_approved), "${state.stats.approvedCount}")
             StatCard(Modifier.weight(1f), stringResource(R.string.stat_upvotes), "${state.stats.totalUpvotes}")
+        }
+
+        // Leaderboard link
+        Card(
+            modifier = Modifier.fillMaxWidth().clickable { onNavigateToLeaderboard() },
+            shape = MaterialTheme.shapes.large,
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.EmojiEvents,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp),
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        stringResource(R.string.leaderboard),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Text(
+                        "Rankings & achievements",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.NavigateNext,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
 
         // Display name edit

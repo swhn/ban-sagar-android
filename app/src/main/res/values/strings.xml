@@ -22,7 +22,7 @@
 
     <!-- Search -->
     <string name="search_placeholder">Search word or meaning…</string>
-    <string name="empty_search">No results for “%s”</string>
+    <string name="empty_search">No results for "%s"</string>
 
     <!-- Slang detail -->
     <string name="meaning">Meaning</string>
@@ -58,6 +58,11 @@
     <string name="stat_approved">Approved</string>
     <string name="stat_upvotes">Upvotes</string>
     <string name="save">Save</string>
+
+    <!-- Leaderboard -->
+    <string name="leaderboard">Leaderboard</string>
+    <string name="leaderboard_rankings">Rankings</string>
+    <string name="leaderboard_achievements">Achievements</string>
 
     <!-- Contribute -->
     <string name="contribute_title">Add a Word</string>

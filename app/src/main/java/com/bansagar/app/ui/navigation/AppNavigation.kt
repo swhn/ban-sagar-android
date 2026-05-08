@@ -18,6 +18,7 @@ import com.bansagar.app.ui.contribute.ContributeScreen
 import com.bansagar.app.ui.detail.SlangDetailScreen
 import com.bansagar.app.ui.history.HistoryScreen
 import com.bansagar.app.ui.home.HomeScreen
+import com.bansagar.app.ui.leaderboard.LeaderboardScreen
 import com.bansagar.app.ui.profile.ProfileScreen
 import com.bansagar.app.ui.search.SearchScreen
 
@@ -27,6 +28,7 @@ object Routes {
     const val CONTRIBUTE = "contribute"
     const val PROFILE = "profile"
     const val HISTORY = "history"
+    const val LEADERBOARD = "leaderboard"
     const val SLANG_DETAIL = "slang/{slug}"
 
     fun slangDetail(slug: String) = "slang/$slug"
@@ -83,12 +85,20 @@ fun AppNavigation() {
                 )
             }
             composable(Routes.PROFILE) {
-                ProfileScreen(authViewModel = authViewModel)
+                ProfileScreen(
+                    authViewModel = authViewModel,
+                    onNavigateToLeaderboard = { navController.navigate(Routes.LEADERBOARD) },
+                )
             }
             composable(Routes.HISTORY) {
                 HistoryScreen(
                     onBack = { navController.popBackStack() },
                     onSlangClick = { slug -> navController.navigate(Routes.slangDetail(slug)) },
+                )
+            }
+            composable(Routes.LEADERBOARD) {
+                LeaderboardScreen(
+                    onBack = { navController.popBackStack() },
                 )
             }
             composable(

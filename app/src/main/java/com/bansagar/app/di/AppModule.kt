@@ -8,12 +8,14 @@ import androidx.datastore.preferences.preferencesDataStoreFile
 import com.bansagar.app.BuildConfig
 import com.bansagar.app.data.repository.AuthRepositoryImpl
 import com.bansagar.app.data.repository.ContributeRepositoryImpl
+import com.bansagar.app.data.repository.LeaderboardRepositoryImpl
 import com.bansagar.app.data.repository.SiteSettingsRepositoryImpl
 import com.bansagar.app.data.repository.SlangRepositoryImpl
 import com.bansagar.app.data.repository.UserRepositoryImpl
 import com.bansagar.app.data.repository.VoteRepositoryImpl
 import com.bansagar.app.domain.repository.AuthRepository
 import com.bansagar.app.domain.repository.ContributeRepository
+import com.bansagar.app.domain.repository.LeaderboardRepository
 import com.bansagar.app.domain.repository.SiteSettingsRepository
 import com.bansagar.app.domain.repository.SlangRepository
 import com.bansagar.app.domain.repository.UserRepository
@@ -85,6 +87,12 @@ object AppModule {
     @Singleton
     fun provideSiteSettingsRepository(client: SupabaseClient): SiteSettingsRepository {
         return SiteSettingsRepositoryImpl(client)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLeaderboardRepository(client: SupabaseClient): LeaderboardRepository {
+        return LeaderboardRepositoryImpl(client)
     }
 
     @Provides
