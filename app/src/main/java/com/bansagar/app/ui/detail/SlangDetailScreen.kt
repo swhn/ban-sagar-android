@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ThumbDown
 import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.ThumbDown
 import androidx.compose.material.icons.outlined.ThumbUp
@@ -28,7 +29,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +41,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -56,24 +58,34 @@ fun SlangDetailScreen(
     viewModel: SlangDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val slang = state.slang
     val context = LocalContext.current
+
+    val isBlurred = slang != null && slang.isNsfw && !state.showNsfw
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
-            title = { Text(state.slang?.word ?: "") },
+            title = {
+                val title = when {
+                    slang == null -> ""
+                    isBlurred -> "••••••"
+                    else -> slang.word
+                }
+                Text(text = title, fontWeight = FontWeight.SemiBold)
+            },
             navigationIcon = {
                 IconButton(onClick = onBack) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                 }
             },
             actions = {
-                if (state.slang != null) {
+                if (slang != null && !isBlurred) {
                     IconButton(onClick = {
-                        val s = state.slang!!
-                        val url = "https://bansagar.com/slang/${s.slug.ifEmpty { s.id }}"
+                        val shareUrl = "https://bansagar.com/slang/${slang.slug.ifEmpty { slang.id }}"
+                        val shareText = "${slang.word} — ${slang.meaning}\n$shareUrl"
                         val intent = Intent(Intent.ACTION_SEND).apply {
                             type = "text/plain"
-                            putExtra(Intent.EXTRA_TEXT, "${s.word} — ${s.meaning}\n$url")
+                            putExtra(Intent.EXTRA_TEXT, shareText)
                         }
                         context.startActivity(Intent.createChooser(intent, null))
                     }) {
@@ -84,12 +96,42 @@ fun SlangDetailScreen(
         )
 
         when {
-            state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
-            state.error != null -> Box(Modifier.fillMaxSize(), Alignment.Center) {
-                Text(state.error ?: stringResource(R.string.error_generic), color = MaterialTheme.colorScheme.error)
+            state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
+                CircularProgressIndicator()
             }
-            state.slang != null -> {
-                val slang = state.slang!!
+            state.error != null -> Box(Modifier.fillMaxSize(), Alignment.Center) {
+                Text(state.error ?: stringResource(R.string.error_generic),
+                    color = MaterialTheme.colorScheme.error)
+            }
+            slang != null && isBlurred -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(
+                        modifier = Modifier.padding(40.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Lock,
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                        )
+                        Text(
+                            text = stringResource(R.string.nsfw_gate_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center,
+                        )
+                        Text(
+                            text = stringResource(R.string.nsfw_gate_desc),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+            }
+            slang != null -> {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -100,24 +142,28 @@ fun SlangDetailScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
                         ),
                         shape = MaterialTheme.shapes.extraLarge,
                     ) {
                         Column(modifier = Modifier.padding(20.dp)) {
-                            Text(slang.word, style = MaterialTheme.typography.headlineMedium)
+                            Text(
+                                text = slang.word,
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
                             if (slang.pronunciation != null) {
                                 Text(
-                                    "/${slang.pronunciation}/",
+                                    text = "/${slang.pronunciation}/",
                                     style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.primary,
+                                    color = MaterialTheme.colorScheme.secondary,
                                     fontStyle = FontStyle.Italic,
                                 )
                             }
-                            Spacer(Modifier.height(12.dp))
-                            // Stats + vote buttons
+                            Spacer(modifier = Modifier.height(12.dp))
                             Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 IconButton(
@@ -136,6 +182,7 @@ fun SlangDetailScreen(
                                     style = MaterialTheme.typography.labelLarge,
                                     color = MaterialTheme.colorScheme.primary,
                                 )
+                                Spacer(Modifier.size(8.dp))
                                 IconButton(
                                     onClick = { viewModel.castVote("down") },
                                     enabled = !state.isVoting,
@@ -152,59 +199,53 @@ fun SlangDetailScreen(
                                     style = MaterialTheme.typography.labelLarge,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
+                                Spacer(Modifier.size(20.dp))
                                 Row(
                                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    Icon(
-                                        Icons.Outlined.Visibility,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(14.dp),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                                    )
-                                    Text(
-                                        "${slang.views}",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                                    )
+                                    Icon(Icons.Outlined.Visibility, null, Modifier.size(16.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text("${slang.views}",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
                         }
                     }
 
                     if (slang.meaning.isNotBlank()) {
-                        SectionCard(stringResource(R.string.meaning)) {
-                            Text(slang.meaning, style = MaterialTheme.typography.bodyLarge)
+                        SectionCard(title = stringResource(R.string.meaning)) {
+                            Text(slang.meaning,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface)
                         }
                     }
-
                     if (!slang.meaningBurmese.isNullOrBlank()) {
-                        SectionCard(stringResource(R.string.meaning_burmese)) {
-                            Text(slang.meaningBurmese, style = MaterialTheme.typography.bodyLarge)
+                        SectionCard(title = stringResource(R.string.meaning_burmese)) {
+                            Text(slang.meaningBurmese,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface)
                         }
                     }
-
                     if (slang.examples.isNotEmpty()) {
-                        SectionCard(stringResource(R.string.examples)) {
+                        SectionCard(title = stringResource(R.string.examples)) {
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 slang.examples.forEach { example ->
-                                    Text(
-                                        text = "\"$example\"",
+                                    Text("\""+example+"\"",
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        fontStyle = FontStyle.Italic,
-                                    )
+                                        fontStyle = FontStyle.Italic)
                                 }
                             }
                         }
                     }
-
                     if (state.relatedWords.isNotEmpty()) {
                         Column {
                             Text(
-                                stringResource(R.string.related_words),
+                                text = stringResource(R.string.related_words),
                                 style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontWeight = FontWeight.SemiBold,
                                 modifier = Modifier.padding(bottom = 8.dp),
                             )
                             FlowRow(
@@ -216,14 +257,13 @@ fun SlangDetailScreen(
                                         onClick = { onSlangClick(related.slug.ifEmpty { related.id }) },
                                         label = {
                                             Column {
-                                                Text(related.word, style = MaterialTheme.typography.labelLarge)
-                                                Text(
-                                                    related.meaning,
+                                                Text(related.word,
+                                                    style = MaterialTheme.typography.labelLarge)
+                                                Text(related.meaning,
                                                     style = MaterialTheme.typography.labelSmall,
                                                     maxLines = 1,
                                                     overflow = TextOverflow.Ellipsis,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                )
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
                                             }
                                         },
                                     )
@@ -231,17 +271,7 @@ fun SlangDetailScreen(
                             }
                         }
                     }
-
-                    if (slang.authorName != null) {
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                        Text(
-                            "Added by ${slang.authorName}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                        )
-                    }
-
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }
@@ -256,12 +286,10 @@ private fun SectionCard(title: String, content: @Composable () -> Unit) {
         shape = MaterialTheme.shapes.large,
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                title,
+            Text(title,
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 8.dp),
-            )
+                modifier = Modifier.padding(bottom = 8.dp))
             content()
         }
     }

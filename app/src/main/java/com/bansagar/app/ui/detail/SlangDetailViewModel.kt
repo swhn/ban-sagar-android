@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bansagar.app.data.model.Slang
+import com.bansagar.app.data.preferences.UserPreferencesRepository
 import com.bansagar.app.domain.repository.AuthRepository
 import com.bansagar.app.domain.repository.SlangRepository
 import com.bansagar.app.domain.repository.VoteRepository
@@ -20,6 +21,7 @@ data class DetailUiState(
     val relatedWords: List<Slang> = emptyList(),
     val isLoading: Boolean = true,
     val error: String? = null,
+    val showNsfw: Boolean = false,
     val userVote: String? = null,
     val isVoting: Boolean = false,
 )
@@ -30,6 +32,7 @@ class SlangDetailViewModel @Inject constructor(
     private val repository: SlangRepository,
     private val voteRepository: VoteRepository,
     private val authRepository: AuthRepository,
+    private val prefs: UserPreferencesRepository,
 ) : ViewModel() {
 
     private val slug: String = savedStateHandle["slug"] ?: ""
@@ -39,6 +42,11 @@ class SlangDetailViewModel @Inject constructor(
 
     init {
         loadSlang()
+        viewModelScope.launch {
+            prefs.showNsfw.collect { show ->
+                _uiState.value = _uiState.value.copy(showNsfw = show)
+            }
+        }
     }
 
     private fun loadSlang() {
@@ -46,15 +54,15 @@ class SlangDetailViewModel @Inject constructor(
             try {
                 val slang = repository.getBySlug(slug)
                 if (slang != null) {
-                    _uiState.value = DetailUiState(slang = slang, isLoading = false)
+                    _uiState.value = _uiState.value.copy(slang = slang, isLoading = false)
                     repository.incrementView(slang.id)
                     loadRelated(slang)
                     loadUserVote(slang.id)
                 } else {
-                    _uiState.value = DetailUiState(error = "Word not found", isLoading = false)
+                    _uiState.value = _uiState.value.copy(error = "Word not found", isLoading = false)
                 }
             } catch (e: Exception) {
-                _uiState.value = DetailUiState(error = e.message, isLoading = false)
+                _uiState.value = _uiState.value.copy(error = e.message, isLoading = false)
             }
         }
     }
@@ -81,7 +89,6 @@ class SlangDetailViewModel @Inject constructor(
         val prevVote = _uiState.value.userVote
         val newVote = if (prevVote == voteType) null else voteType
 
-        // Optimistic update
         val upDelta = when {
             newVote == "up" -> 1
             prevVote == "up" -> -1
@@ -104,7 +111,6 @@ class SlangDetailViewModel @Inject constructor(
         viewModelScope.launch {
             val user = authRepository.currentUserFlow.first()
             if (user == null) {
-                // Revert if not signed in
                 _uiState.value = _uiState.value.copy(userVote = prevVote, slang = slang, isVoting = false)
                 return@launch
             }
@@ -112,7 +118,6 @@ class SlangDetailViewModel @Inject constructor(
                 voteRepository.castVote(user.id, slang.id, voteType)
                 _uiState.value = _uiState.value.copy(isVoting = false)
             } catch (_: Exception) {
-                // Revert on error
                 _uiState.value = _uiState.value.copy(userVote = prevVote, slang = slang, isVoting = false)
             }
         }
