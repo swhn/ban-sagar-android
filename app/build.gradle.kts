@@ -77,6 +77,9 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.navigation:navigation-compose:2.8.5")
 
+    // Splash screen (compat back to API 23; minSdk=26 so fully covered)
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
     // Supabase
     implementation(platform("io.github.jan-tennert.supabase:bom:3.1.1"))
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
