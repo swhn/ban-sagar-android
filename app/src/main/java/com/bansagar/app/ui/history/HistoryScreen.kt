@@ -1,5 +1,10 @@
 package com.bansagar.app.ui.history
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,27 +14,37 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bansagar.app.R
 import com.bansagar.app.ui.components.SlangCard
+
+private val Indigo500 = Color(0xFF6366F1)
+private val Emerald400 = Color(0xFF34D399)
+private val Amber400 = Color(0xFFFBBF24)
+private val Rose400 = Color(0xFFFB7185)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,54 +59,54 @@ fun HistoryScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
-            title = { Text(stringResource(R.string.my_submissions)) },
+            title = { Text(stringResource(R.string.my_submissions), fontWeight = FontWeight.SemiBold) },
             navigationIcon = {
                 IconButton(onClick = onBack) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                 }
             },
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
         )
 
-        // Filter chips
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        // Pill filter row
+        LazyRow(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            listOf(null, "pending", "approved", "rejected").forEach { status ->
-                FilterChip(
+            val filters = listOf(
+                null to stringResource(R.string.filter_all),
+                "pending" to stringResource(R.string.status_pending),
+                "approved" to stringResource(R.string.status_approved),
+                "rejected" to stringResource(R.string.status_rejected),
+            )
+            items(filters) { (status, label) ->
+                StatusFilterPill(
+                    label = label,
+                    status = status,
                     selected = state.filterStatus == status,
                     onClick = { viewModel.setFilter(status) },
-                    label = {
-                        Text(
-                            when (status) {
-                                null -> stringResource(R.string.filter_all)
-                                "pending" -> stringResource(R.string.status_pending)
-                                "approved" -> stringResource(R.string.status_approved)
-                                else -> stringResource(R.string.status_rejected)
-                            }
-                        )
-                    },
                 )
             }
         }
 
         when {
             state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = Indigo500)
             }
             displayed.isEmpty() -> Box(Modifier.fillMaxSize(), Alignment.Center) {
                 Text(
                     text = stringResource(R.string.empty_history),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = Color.White.copy(alpha = 0.4f),
                 )
             }
             else -> LazyColumn(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 items(items = displayed, key = { it.id }) { slang ->
-                    Column {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         SlangCard(
                             slang = slang,
                             showNsfw = true,
@@ -106,16 +121,63 @@ fun HistoryScreen(
 }
 
 @Composable
+private fun StatusFilterPill(
+    label: String,
+    status: String?,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    val accentColor = when (status) {
+        "approved" -> Emerald400
+        "rejected" -> Rose400
+        "pending" -> Amber400
+        else -> Indigo500
+    }
+    val bgColor by animateColorAsState(
+        targetValue = if (selected) accentColor else accentColor.copy(alpha = 0.08f),
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "filterBg",
+    )
+    val textColor by animateColorAsState(
+        targetValue = if (selected) Color.White else accentColor.copy(alpha = 0.7f),
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "filterText",
+    )
+
+    Box(
+        modifier = Modifier
+            .shadow(
+                elevation = if (selected) 6.dp else 0.dp,
+                shape = RoundedCornerShape(50),
+                ambientColor = accentColor.copy(alpha = 0.3f),
+                spotColor = accentColor.copy(alpha = 0.3f),
+            )
+            .background(bgColor, RoundedCornerShape(50))
+            .clickable { onClick() }
+            .padding(horizontal = 14.dp, vertical = 7.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = textColor,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+        )
+    }
+}
+
+@Composable
 private fun StatusBadge(status: String) {
     val (color, label) = when (status) {
-        "approved" -> MaterialTheme.colorScheme.primary to stringResource(R.string.status_approved)
-        "rejected" -> MaterialTheme.colorScheme.error to stringResource(R.string.status_rejected)
-        else -> MaterialTheme.colorScheme.outline to stringResource(R.string.status_pending)
+        "approved" -> Emerald400 to stringResource(R.string.status_approved)
+        "rejected" -> Rose400 to stringResource(R.string.status_rejected)
+        else -> Amber400 to stringResource(R.string.status_pending)
     }
     Text(
         text = label,
         style = MaterialTheme.typography.labelSmall,
-        color = color,
-        modifier = Modifier.padding(start = 16.dp, top = 4.dp),
+        color = color.copy(alpha = 0.8f),
+        fontWeight = FontWeight.SemiBold,
+        modifier = Modifier.padding(start = 16.dp),
     )
 }

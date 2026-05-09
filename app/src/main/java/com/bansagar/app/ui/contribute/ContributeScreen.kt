@@ -54,7 +54,6 @@ private val Indigo500 = Color(0xFF6366F1)
 private val Indigo400 = Color(0xFF818CF8)
 private val SurfaceCard = Color(0xFF16161E)
 private val Rose400 = Color(0xFFFB7185)
-private val Amber400 = Color(0xFFFBBF24)
 
 @Composable
 fun ContributeScreen(
@@ -120,10 +119,7 @@ fun ContributeScreen(
     }
 
     if (state.submitted) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
-        ) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(
                 modifier = Modifier.padding(32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -194,7 +190,6 @@ fun ContributeScreen(
             }
         }
 
-        // Section: The Word
         FormSection(label = "THE WORD") {
             OutlinedTextField(
                 value = state.word,
@@ -245,7 +240,6 @@ fun ContributeScreen(
             }
         }
 
-        // Section: Definitions
         FormSection(label = "DEFINITIONS") {
             OutlinedTextField(
                 value = state.meaning,
@@ -265,7 +259,6 @@ fun ContributeScreen(
             )
         }
 
-        // Section: Examples
         FormSection(label = "EXAMPLES") {
             state.examples.forEachIndexed { index, example ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -293,7 +286,7 @@ fun ContributeScreen(
             }
         }
 
-        // Section: Options
+        // NSFW option row
         Surface(
             shape = RoundedCornerShape(14.dp),
             color = SurfaceCard,
@@ -317,10 +310,7 @@ fun ContributeScreen(
                         color = Color.White.copy(alpha = 0.4f),
                     )
                 }
-                Switch(
-                    checked = state.isNsfw,
-                    onCheckedChange = viewModel::onNsfwChange,
-                )
+                Switch(checked = state.isNsfw, onCheckedChange = viewModel::onNsfwChange)
             }
         }
 
@@ -349,7 +339,7 @@ fun ContributeScreen(
 @Composable
 private fun FormSection(
     label: String,
-    content: @Composable Column.() -> Unit,
+    content: @Composable () -> Unit,
 ) {
     Surface(
         shape = RoundedCornerShape(14.dp),
