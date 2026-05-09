@@ -1,6 +1,7 @@
 package com.bansagar.app.ui.detail
 
 import android.content.Intent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,15 +14,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ThumbDown
+import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.ThumbDown
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material.icons.outlined.Visibility
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -29,12 +34,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
@@ -45,6 +53,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bansagar.app.R
+
+private val Rose400 = Color(0xFFFB7185)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -57,8 +67,11 @@ fun SlangDetailScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val slang = state.slang
     val context = LocalContext.current
-
     val isBlurred = slang != null && slang.isNsfw && !state.showNsfw
+    val primary = MaterialTheme.colorScheme.primary
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+    val surfaceContainer = MaterialTheme.colorScheme.surfaceContainer
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
@@ -72,7 +85,7 @@ fun SlangDetailScreen(
             },
             navigationIcon = {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                 }
             },
             actions = {
@@ -90,15 +103,15 @@ fun SlangDetailScreen(
                     }
                 }
             },
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
         )
 
         when {
             state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = primary)
             }
             state.error != null -> Box(Modifier.fillMaxSize(), Alignment.Center) {
-                Text(state.error ?: stringResource(R.string.error_generic),
-                    color = MaterialTheme.colorScheme.error)
+                Text(state.error ?: stringResource(R.string.error_generic), color = MaterialTheme.colorScheme.error)
             }
             slang != null && isBlurred -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -107,142 +120,91 @@ fun SlangDetailScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Lock,
-                            contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                        )
-                        Text(
-                            text = stringResource(R.string.nsfw_gate_title),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            textAlign = TextAlign.Center,
-                        )
-                        Text(
-                            text = stringResource(R.string.nsfw_gate_desc),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center,
-                        )
-                        Text(
-                            text = stringResource(R.string.nsfw_gate_phase2),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.outline,
-                            textAlign = TextAlign.Center,
-                        )
+                        Icon(Icons.Outlined.Lock, null, Modifier.size(48.dp), tint = onSurfaceVariant)
+                        Text(stringResource(R.string.nsfw_gate_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
+                        Text(stringResource(R.string.nsfw_gate_desc), style = MaterialTheme.typography.bodyMedium, color = onSurfaceVariant, textAlign = TextAlign.Center)
                     }
                 }
             }
             slang != null -> {
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
-                        ),
-                        shape = MaterialTheme.shapes.extraLarge,
+                    Box(
+                        modifier = Modifier.fillMaxWidth().background(primary.copy(alpha = 0.08f), RoundedCornerShape(20.dp)).padding(20.dp),
                     ) {
-                        Column(modifier = Modifier.padding(20.dp)) {
-                            Text(
-                                text = slang.word,
-                                style = MaterialTheme.typography.headlineMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                            if (slang.pronunciation != null) {
-                                Text(
-                                    text = "/${slang.pronunciation}/",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    fontStyle = FontStyle.Italic,
-                                )
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(slang.word, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.ExtraBold, color = primary)
+                            if (!slang.pronunciation.isNullOrBlank()) {
+                                Text("/${slang.pronunciation}/", style = MaterialTheme.typography.titleSmall, color = onSurfaceVariant, fontStyle = FontStyle.Italic)
                             }
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Icon(Icons.Outlined.ThumbUp, null, Modifier.size(16.dp),
-                                        tint = MaterialTheme.colorScheme.primary)
-                                    Text("${slang.upvotes}",
-                                        style = MaterialTheme.typography.labelLarge,
-                                        color = MaterialTheme.colorScheme.primary)
-                                }
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Icon(Icons.Outlined.Visibility, null, Modifier.size(16.dp),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    Text("${slang.views}",
-                                        style = MaterialTheme.typography.labelLarge,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                VotePill(
+                                    active = state.userVote == "up", activeColor = primary, onActiveColor = MaterialTheme.colorScheme.onPrimary,
+                                    enabled = !state.isVoting, onClick = { viewModel.castVote("up") },
+                                    icon = {
+                                        Icon(
+                                            if (state.userVote == "up") Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
+                                            stringResource(R.string.upvote), Modifier.size(15.dp),
+                                            tint = if (state.userVote == "up") MaterialTheme.colorScheme.onPrimary else primary,
+                                        )
+                                    },
+                                    label = "${slang.upvotes}",
+                                    labelColor = if (state.userVote == "up") MaterialTheme.colorScheme.onPrimary else primary,
+                                )
+                                VotePill(
+                                    active = state.userVote == "down", activeColor = Rose400, onActiveColor = Color.White,
+                                    enabled = !state.isVoting, onClick = { viewModel.castVote("down") },
+                                    icon = {
+                                        Icon(
+                                            if (state.userVote == "down") Icons.Filled.ThumbDown else Icons.Outlined.ThumbDown,
+                                            stringResource(R.string.downvote), Modifier.size(15.dp),
+                                            tint = if (state.userVote == "down") Color.White else Rose400,
+                                        )
+                                    },
+                                    label = "${slang.downvotes}",
+                                    labelColor = if (state.userVote == "down") Color.White else Rose400,
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Outlined.Visibility, null, Modifier.size(14.dp), tint = onSurfaceVariant)
+                                    Text("${slang.views}", style = MaterialTheme.typography.labelMedium, color = onSurfaceVariant)
                                 }
                             }
                         }
                     }
 
                     if (slang.meaning.isNotBlank()) {
-                        SectionCard(title = stringResource(R.string.meaning)) {
-                            Text(slang.meaning,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface)
-                        }
+                        SectionCard(stringResource(R.string.meaning)) { Text(slang.meaning, style = MaterialTheme.typography.bodyLarge, color = onSurface) }
                     }
                     if (!slang.meaningBurmese.isNullOrBlank()) {
-                        SectionCard(title = stringResource(R.string.meaning_burmese)) {
-                            Text(slang.meaningBurmese,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface)
-                        }
+                        SectionCard(stringResource(R.string.meaning_burmese)) { Text(slang.meaningBurmese, style = MaterialTheme.typography.bodyLarge, color = onSurface) }
                     }
                     if (slang.examples.isNotEmpty()) {
-                        SectionCard(title = stringResource(R.string.examples)) {
+                        SectionCard(stringResource(R.string.examples)) {
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                slang.examples.forEach { example ->
-                                    Text("\""+example+"\"",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        fontStyle = FontStyle.Italic)
+                                slang.examples.forEachIndexed { i, example ->
+                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
+                                        Text("${i + 1}.", style = MaterialTheme.typography.bodySmall, color = primary.copy(alpha = 0.7f), fontWeight = FontWeight.Bold)
+                                        Text("\"$example\"", style = MaterialTheme.typography.bodyMedium, color = onSurfaceVariant, fontStyle = FontStyle.Italic)
+                                    }
                                 }
                             }
                         }
                     }
                     if (state.relatedWords.isNotEmpty()) {
                         Column {
-                            Text(
-                                text = stringResource(R.string.related_words),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                modifier = Modifier.padding(bottom = 8.dp),
-                            )
-                            FlowRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
+                            Text(stringResource(R.string.related_words), style = MaterialTheme.typography.labelLarge, color = primary.copy(alpha = 0.8f), fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 8.dp))
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 state.relatedWords.forEach { related ->
-                                    AssistChip(
-                                        onClick = { onSlangClick(related.slug.ifEmpty { related.id }) },
-                                        label = {
-                                            Column {
-                                                Text(related.word,
-                                                    style = MaterialTheme.typography.labelLarge)
-                                                Text(related.meaning,
-                                                    style = MaterialTheme.typography.labelSmall,
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                            }
-                                        },
-                                    )
+                                    Surface(onClick = { onSlangClick(related.slug.ifEmpty { related.id }) }, shape = RoundedCornerShape(10.dp), color = surfaceContainer, tonalElevation = 2.dp) {
+                                        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+                                            Text(related.word, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, color = primary)
+                                            Text(related.meaning, style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = TextOverflow.Ellipsis, color = onSurfaceVariant)
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -255,17 +217,20 @@ fun SlangDetailScreen(
 }
 
 @Composable
+private fun VotePill(active: Boolean, activeColor: Color, onActiveColor: Color, enabled: Boolean, onClick: () -> Unit, icon: @Composable () -> Unit, label: String, labelColor: Color) {
+    Surface(onClick = onClick, enabled = enabled, shape = RoundedCornerShape(50), color = if (active) activeColor else activeColor.copy(alpha = 0.12f)) {
+        Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp), horizontalArrangement = Arrangement.spacedBy(5.dp), verticalAlignment = Alignment.CenterVertically) {
+            icon()
+            Text(label, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, color = labelColor)
+        }
+    }
+}
+
+@Composable
 private fun SectionCard(title: String, content: @Composable () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = MaterialTheme.shapes.large,
-    ) {
+    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer), shape = RoundedCornerShape(14.dp)) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(title,
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 8.dp))
+            Text(title, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f), fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
             content()
         }
     }
