@@ -13,4 +13,5 @@ interface UserRepository {
         notifyBadges: Boolean,
     )
     suspend fun getStats(userId: String): UserStats
+    suspend fun updateFcmToken(userId: String, token: String)
 }

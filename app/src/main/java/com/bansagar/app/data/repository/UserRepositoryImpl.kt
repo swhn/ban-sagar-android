@@ -60,4 +60,14 @@ class UserRepositoryImpl @Inject constructor(
             )
         } catch (_: Exception) { UserStats() }
     }
+
+    override suspend fun updateFcmToken(userId: String, token: String) {
+        try {
+            client.from("users").update(
+                buildJsonObject { put("fcm_token", token) }
+            ) {
+                filter { eq("id", userId) }
+            }
+        } catch (_: Exception) { /* non-critical; token will sync on next token rotation */ }
+    }
 }
