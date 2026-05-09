@@ -57,6 +57,18 @@ fun HistoryScreen(
     val displayed = if (state.filterStatus == null) state.slangs
     else state.slangs.filter { it.status == state.filterStatus }
 
+    // Resolve strings in composable scope before entering LazyListScope
+    val labelAll = stringResource(R.string.filter_all)
+    val labelPending = stringResource(R.string.status_pending)
+    val labelApproved = stringResource(R.string.status_approved)
+    val labelRejected = stringResource(R.string.status_rejected)
+    val filters = listOf(
+        null to labelAll,
+        "pending" to labelPending,
+        "approved" to labelApproved,
+        "rejected" to labelRejected,
+    )
+
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
             title = { Text(stringResource(R.string.my_submissions), fontWeight = FontWeight.SemiBold) },
@@ -68,18 +80,11 @@ fun HistoryScreen(
             colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
         )
 
-        // Pill filter row
         LazyRow(
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            val filters = listOf(
-                null to stringResource(R.string.filter_all),
-                "pending" to stringResource(R.string.status_pending),
-                "approved" to stringResource(R.string.status_approved),
-                "rejected" to stringResource(R.string.status_rejected),
-            )
             items(filters) { (status, label) ->
                 StatusFilterPill(
                     label = label,
