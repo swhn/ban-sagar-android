@@ -1,30 +1,40 @@
 package com.bansagar.app.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material.icons.outlined.Visibility
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.bansagar.app.data.model.Slang
+
+private val CardAccent = Color(0xFF6366F1)
+private val CardSurface = Color(0xFF16161E)
 
 @Composable
 fun SlangCard(
@@ -35,42 +45,35 @@ fun SlangCard(
 ) {
     val blurred = slang.isNsfw && !showNsfw
 
-    ElevatedCard(
+    Surface(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp),
-        shape = MaterialTheme.shapes.medium,
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 4.dp,
+                shape = RoundedCornerShape(14.dp),
+                ambientColor = CardAccent.copy(alpha = 0.08f),
+                spotColor = CardAccent.copy(alpha = 0.08f),
+            ),
+        shape = RoundedCornerShape(14.dp),
+        color = CardSurface,
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Box(modifier = Modifier.weight(1f)) {
-                Column(
-                    modifier = if (blurred) Modifier.blur(8.dp) else Modifier,
-                ) {
-                    Text(
-                        text = slang.word,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    if (!slang.pronunciation.isNullOrBlank()) {
-                        Text(
-                            text = "/${slang.pronunciation}/",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontStyle = FontStyle.Italic,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                }
+        Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
+            Box(
+                modifier = Modifier
+                    .width(3.dp)
+                    .fillMaxHeight()
+                    .background(
+                        if (blurred) CardAccent.copy(alpha = 0.15f)
+                        else CardAccent.copy(alpha = 0.65f),
+                    ),
+            )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 12.dp, end = 14.dp, top = 11.dp, bottom = 11.dp),
+                verticalArrangement = Arrangement.spacedBy(3.dp),
+            ) {
                 if (blurred) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -80,33 +83,58 @@ fun SlangCard(
                             imageVector = Icons.Outlined.Lock,
                             contentDescription = null,
                             modifier = Modifier.size(12.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            tint = Color.White.copy(alpha = 0.3f),
                         )
                         Text(
-                            text = "NSFW",
+                            text = "NSFW — Enable in settings to view",
                             style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = Color.White.copy(alpha = 0.3f),
+                        )
+                    }
+                } else {
+                    Text(
+                        text = slang.word,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = CardAccent.copy(alpha = 0.9f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    if (!slang.pronunciation.isNullOrBlank()) {
+                        Text(
+                            text = "/${slang.pronunciation}/",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontStyle = FontStyle.Italic,
+                            color = Color.White.copy(alpha = 0.4f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    if (slang.meaning.isNotBlank()) {
+                        Text(
+                            text = slang.meaning,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.55f),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
                 }
-            }
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                StatItem(icon = Icons.Outlined.ThumbUp, count = slang.upvotes)
-                StatItem(icon = Icons.Outlined.Visibility, count = slang.views)
+                Row(
+                    modifier = Modifier.padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    StatChip(icon = Icons.Outlined.ThumbUp, count = slang.upvotes)
+                    StatChip(icon = Icons.Outlined.Visibility, count = slang.views)
+                }
             }
         }
     }
 }
 
 @Composable
-private fun StatItem(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    count: Int,
-) {
+private fun StatChip(icon: ImageVector, count: Int) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(3.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -115,12 +143,12 @@ private fun StatItem(
             imageVector = icon,
             contentDescription = null,
             modifier = Modifier.size(11.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+            tint = Color.White.copy(alpha = 0.22f),
         )
         Text(
             text = formatCount(count),
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+            color = Color.White.copy(alpha = 0.28f),
         )
     }
 }
