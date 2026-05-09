@@ -1,8 +1,8 @@
 package com.bansagar.app.ui.home
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.EaseInOutCubic
-import androidx.compose.animation.core.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -217,12 +217,8 @@ fun HomeScreen(
     }
 }
 
-// ── Reusable tab components ────────────────────────────────────────────────────
+// ── Tab components ───────────────────────────────────────────────────────────
 
-/**
- * Primary sort tab: filled capsule when selected, subtle indigo tint when not.
- * Soft glow shadow lifts the selected pill off the surface.
- */
 @Composable
 private fun SortTabPill(
     label: String,
@@ -248,7 +244,7 @@ private fun SortTabPill(
                     elevation = 8.dp,
                     shape = CircleShape,
                     ambientColor = Indigo500.copy(alpha = 0.40f),
-                    spotColor  = Indigo500.copy(alpha = 0.40f),
+                    spotColor = Indigo500.copy(alpha = 0.40f),
                 ) else Modifier
             )
             .clip(CircleShape)
@@ -274,10 +270,6 @@ private fun SortTabPill(
     }
 }
 
-/**
- * Compact timeframe pill: outlined border with indigo accent when selected,
- * barely-visible outline when unselected.
- */
 @Composable
 private fun TimeframePill(
     label: String,
