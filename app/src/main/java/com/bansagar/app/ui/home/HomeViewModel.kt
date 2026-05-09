@@ -69,14 +69,20 @@ class HomeViewModel @Inject constructor(
     fun loadMore() {
         val state = _uiState.value
         if (state.isLoading || state.isLoadingMore || !state.canLoadMore ||
-            state.activeTab == SortTab.Random) return
+            state.activeTab == SortTab.Random ||
+            // Don't load more until the first network page has landed (offset 0 would re-fetch
+            // the same items already visible and cause duplicate keys in LazyColumn).
+            currentOffset == 0
+        ) return
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoadingMore = true)
             try {
                 val newItems = fetchForTab(state.activeTab, state.activeTimeframe, PAGE_SIZE, currentOffset)
                 currentOffset += newItems.size
+                // Read CURRENT slangs at write-time (not the captured snapshot) to avoid a race
+                // where loadSlangs() replaced the list between our fetch start and now.
                 _uiState.value = _uiState.value.copy(
-                    slangs = state.slangs + newItems,
+                    slangs = (_uiState.value.slangs + newItems).distinctBy { it.id },
                     isLoadingMore = false,
                     canLoadMore = newItems.size == PAGE_SIZE,
                 )
@@ -98,7 +104,7 @@ class HomeViewModel @Inject constructor(
                 val cached = getCachedForTab(tab, timeframe)
                 if (cached.isNotEmpty()) {
                     _uiState.value = _uiState.value.copy(
-                        slangs = cached,
+                        slangs = cached.distinctBy { it.id },
                         isLoading = false,
                         error = null,
                         canLoadMore = cached.size == PAGE_SIZE && tab != SortTab.Random,
@@ -108,12 +114,13 @@ class HomeViewModel @Inject constructor(
                 }
             }
 
-            // Step 2: fetch fresh from network (always)
+            // Step 2: fetch fresh from network; currentOffset is set here so loadMore
+            // only becomes eligible after this completes.
             try {
                 val slangs = fetchForTab(tab, timeframe, PAGE_SIZE, 0)
                 currentOffset = slangs.size
                 _uiState.value = _uiState.value.copy(
-                    slangs = slangs,
+                    slangs = slangs.distinctBy { it.id },
                     isLoading = false,
                     isRefreshing = false,
                     canLoadMore = slangs.size == PAGE_SIZE && tab != SortTab.Random,
