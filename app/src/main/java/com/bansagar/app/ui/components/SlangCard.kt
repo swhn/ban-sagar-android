@@ -24,17 +24,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.bansagar.app.data.model.Slang
-
-private val CardAccent = Color(0xFF6366F1)
-private val CardSurface = Color(0xFF16161E)
 
 @Composable
 fun SlangCard(
@@ -44,19 +39,15 @@ fun SlangCard(
     modifier: Modifier = Modifier,
 ) {
     val blurred = slang.isNsfw && !showNsfw
+    val primary = MaterialTheme.colorScheme.primary
+    val surface = MaterialTheme.colorScheme.surfaceContainer
 
     Surface(
         onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = 4.dp,
-                shape = RoundedCornerShape(14.dp),
-                ambientColor = CardAccent.copy(alpha = 0.08f),
-                spotColor = CardAccent.copy(alpha = 0.08f),
-            ),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
-        color = CardSurface,
+        color = surface,
+        tonalElevation = 1.dp,
     ) {
         Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
             Box(
@@ -64,8 +55,7 @@ fun SlangCard(
                     .width(3.dp)
                     .fillMaxHeight()
                     .background(
-                        if (blurred) CardAccent.copy(alpha = 0.15f)
-                        else CardAccent.copy(alpha = 0.65f),
+                        if (blurred) primary.copy(alpha = 0.2f) else primary.copy(alpha = 0.7f),
                     ),
             )
             Column(
@@ -83,12 +73,12 @@ fun SlangCard(
                             imageVector = Icons.Outlined.Lock,
                             contentDescription = null,
                             modifier = Modifier.size(12.dp),
-                            tint = Color.White.copy(alpha = 0.3f),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
                             text = "NSFW — Enable in settings to view",
                             style = MaterialTheme.typography.labelSmall,
-                            color = Color.White.copy(alpha = 0.3f),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 } else {
@@ -96,7 +86,7 @@ fun SlangCard(
                         text = slang.word,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = CardAccent.copy(alpha = 0.9f),
+                        color = primary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -105,7 +95,7 @@ fun SlangCard(
                             text = "/${slang.pronunciation}/",
                             style = MaterialTheme.typography.bodySmall,
                             fontStyle = FontStyle.Italic,
-                            color = Color.White.copy(alpha = 0.4f),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
@@ -114,7 +104,7 @@ fun SlangCard(
                         Text(
                             text = slang.meaning,
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color.White.copy(alpha = 0.55f),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                         )
@@ -143,12 +133,12 @@ private fun StatChip(icon: ImageVector, count: Int) {
             imageVector = icon,
             contentDescription = null,
             modifier = Modifier.size(11.dp),
-            tint = Color.White.copy(alpha = 0.22f),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
         )
         Text(
             text = formatCount(count),
             style = MaterialTheme.typography.labelSmall,
-            color = Color.White.copy(alpha = 0.28f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
         )
     }
 }

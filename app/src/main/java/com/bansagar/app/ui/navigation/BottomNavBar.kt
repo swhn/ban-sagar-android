@@ -38,9 +38,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.bansagar.app.R
 
-private val NavIndigo = Color(0xFF6366F1)
-private val NavSurface = Color(0xFF16161E)
-
 data class BottomNavItem(
     val route: String,
     val labelRes: Int,
@@ -60,6 +57,7 @@ fun BottomNavBar(
     currentRoute: String?,
     onNavigate: (String) -> Unit,
 ) {
+    val primary = MaterialTheme.colorScheme.primary
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -70,11 +68,12 @@ fun BottomNavBar(
             modifier = Modifier.shadow(
                 elevation = 20.dp,
                 shape = RoundedCornerShape(28.dp),
-                ambientColor = NavIndigo.copy(alpha = 0.28f),
-                spotColor = NavIndigo.copy(alpha = 0.28f),
+                ambientColor = primary.copy(alpha = 0.22f),
+                spotColor = primary.copy(alpha = 0.22f),
             ),
             shape = RoundedCornerShape(28.dp),
-            color = NavSurface,
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            tonalElevation = 3.dp,
         ) {
             Row(
                 modifier = Modifier
@@ -100,13 +99,17 @@ private fun NavTabItem(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
+    val primary = MaterialTheme.colorScheme.primary
+    val onPrimary = MaterialTheme.colorScheme.onPrimary
+    val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+
     val bgColor by animateColorAsState(
-        targetValue = if (selected) NavIndigo else Color.Transparent,
+        targetValue = if (selected) primary else Color.Transparent,
         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
         label = "navBg",
     )
     val contentColor by animateColorAsState(
-        targetValue = if (selected) Color.White else Color.White.copy(alpha = 0.4f),
+        targetValue = if (selected) onPrimary else onSurfaceVariant,
         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
         label = "navContent",
     )

@@ -41,7 +41,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bansagar.app.R
 import com.bansagar.app.ui.components.SlangCard
 
-private val Indigo500 = Color(0xFF6366F1)
 private val Emerald400 = Color(0xFF34D399)
 private val Amber400 = Color(0xFFFBBF24)
 private val Rose400 = Color(0xFFFB7185)
@@ -57,7 +56,6 @@ fun HistoryScreen(
     val displayed = if (state.filterStatus == null) state.slangs
     else state.slangs.filter { it.status == state.filterStatus }
 
-    // Resolve strings in composable scope before entering LazyListScope
     val labelAll = stringResource(R.string.filter_all)
     val labelPending = stringResource(R.string.status_pending)
     val labelApproved = stringResource(R.string.status_approved)
@@ -97,13 +95,13 @@ fun HistoryScreen(
 
         when {
             state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
-                CircularProgressIndicator(color = Indigo500)
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
             displayed.isEmpty() -> Box(Modifier.fillMaxSize(), Alignment.Center) {
                 Text(
                     text = stringResource(R.string.empty_history),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.4f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             else -> LazyColumn(
@@ -136,27 +134,25 @@ private fun StatusFilterPill(
         "approved" -> Emerald400
         "rejected" -> Rose400
         "pending" -> Amber400
-        else -> Indigo500
+        else -> MaterialTheme.colorScheme.primary
     }
+    val onPrimary = MaterialTheme.colorScheme.onPrimary
     val bgColor by animateColorAsState(
-        targetValue = if (selected) accentColor else accentColor.copy(alpha = 0.08f),
+        targetValue = if (selected) accentColor else accentColor.copy(alpha = 0.12f),
         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
         label = "filterBg",
     )
     val textColor by animateColorAsState(
-        targetValue = if (selected) Color.White else accentColor.copy(alpha = 0.7f),
+        targetValue = if (selected) {
+            if (status == null) onPrimary else Color.White
+        } else accentColor,
         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
         label = "filterText",
     )
 
     Box(
         modifier = Modifier
-            .shadow(
-                elevation = if (selected) 6.dp else 0.dp,
-                shape = RoundedCornerShape(50),
-                ambientColor = accentColor.copy(alpha = 0.3f),
-                spotColor = accentColor.copy(alpha = 0.3f),
-            )
+            .shadow(if (selected) 6.dp else 0.dp, RoundedCornerShape(50), ambientColor = accentColor.copy(0.25f), spotColor = accentColor.copy(0.25f))
             .background(bgColor, RoundedCornerShape(50))
             .clickable { onClick() }
             .padding(horizontal = 14.dp, vertical = 7.dp),
@@ -181,7 +177,7 @@ private fun StatusBadge(status: String) {
     Text(
         text = label,
         style = MaterialTheme.typography.labelSmall,
-        color = color.copy(alpha = 0.8f),
+        color = color,
         fontWeight = FontWeight.SemiBold,
         modifier = Modifier.padding(start = 16.dp),
     )

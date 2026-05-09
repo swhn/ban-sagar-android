@@ -54,9 +54,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bansagar.app.R
 
-private val Indigo500 = Color(0xFF6366F1)
 private val Rose400 = Color(0xFFFB7185)
-private val DetailSurface = Color(0xFF16161E)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -70,6 +68,10 @@ fun SlangDetailScreen(
     val slang = state.slang
     val context = LocalContext.current
     val isBlurred = slang != null && slang.isNsfw && !state.showNsfw
+    val primary = MaterialTheme.colorScheme.primary
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+    val surfaceContainer = MaterialTheme.colorScheme.surfaceContainer
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
@@ -101,18 +103,15 @@ fun SlangDetailScreen(
                     }
                 }
             },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Transparent,
-            ),
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
         )
 
         when {
             state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
-                CircularProgressIndicator(color = Indigo500)
+                CircularProgressIndicator(color = primary)
             }
             state.error != null -> Box(Modifier.fillMaxSize(), Alignment.Center) {
-                Text(state.error ?: stringResource(R.string.error_generic),
-                    color = MaterialTheme.colorScheme.error)
+                Text(state.error ?: stringResource(R.string.error_generic), color = MaterialTheme.colorScheme.error)
             }
             slang != null && isBlurred -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -125,7 +124,7 @@ fun SlangDetailScreen(
                             imageVector = Icons.Outlined.Lock,
                             contentDescription = null,
                             modifier = Modifier.size(48.dp),
-                            tint = Color.White.copy(alpha = 0.25f),
+                            tint = onSurfaceVariant,
                         )
                         Text(
                             text = stringResource(R.string.nsfw_gate_title),
@@ -136,7 +135,7 @@ fun SlangDetailScreen(
                         Text(
                             text = stringResource(R.string.nsfw_gate_desc),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = onSurfaceVariant,
                             textAlign = TextAlign.Center,
                         )
                     }
@@ -154,10 +153,7 @@ fun SlangDetailScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(
-                                Indigo500.copy(alpha = 0.08f),
-                                RoundedCornerShape(20.dp),
-                            )
+                            .background(primary.copy(alpha = 0.08f), RoundedCornerShape(20.dp))
                             .padding(20.dp),
                     ) {
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -165,13 +161,13 @@ fun SlangDetailScreen(
                                 text = slang.word,
                                 style = MaterialTheme.typography.headlineMedium,
                                 fontWeight = FontWeight.ExtraBold,
-                                color = Indigo500,
+                                color = primary,
                             )
                             if (!slang.pronunciation.isNullOrBlank()) {
                                 Text(
                                     text = "/${slang.pronunciation}/",
                                     style = MaterialTheme.typography.titleSmall,
-                                    color = Color.White.copy(alpha = 0.45f),
+                                    color = onSurfaceVariant,
                                     fontStyle = FontStyle.Italic,
                                 )
                             }
@@ -182,7 +178,8 @@ fun SlangDetailScreen(
                             ) {
                                 VotePill(
                                     active = state.userVote == "up",
-                                    activeColor = Indigo500,
+                                    activeColor = primary,
+                                    onActiveColor = MaterialTheme.colorScheme.onPrimary,
                                     enabled = !state.isVoting,
                                     onClick = { viewModel.castVote("up") },
                                     icon = {
@@ -190,15 +187,16 @@ fun SlangDetailScreen(
                                             imageVector = if (state.userVote == "up") Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
                                             contentDescription = stringResource(R.string.upvote),
                                             modifier = Modifier.size(15.dp),
-                                            tint = if (state.userVote == "up") Color.White else Indigo500,
+                                            tint = if (state.userVote == "up") MaterialTheme.colorScheme.onPrimary else primary,
                                         )
                                     },
                                     label = "${slang.upvotes}",
-                                    labelColor = if (state.userVote == "up") Color.White else Indigo500,
+                                    labelColor = if (state.userVote == "up") MaterialTheme.colorScheme.onPrimary else primary,
                                 )
                                 VotePill(
                                     active = state.userVote == "down",
                                     activeColor = Rose400,
+                                    onActiveColor = Color.White,
                                     enabled = !state.isVoting,
                                     onClick = { viewModel.castVote("down") },
                                     icon = {
@@ -217,16 +215,8 @@ fun SlangDetailScreen(
                                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    Icon(
-                                        Icons.Outlined.Visibility, null,
-                                        Modifier.size(14.dp),
-                                        tint = Color.White.copy(alpha = 0.3f),
-                                    )
-                                    Text(
-                                        "${slang.views}",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = Color.White.copy(alpha = 0.35f),
-                                    )
+                                    Icon(Icons.Outlined.Visibility, null, Modifier.size(14.dp), tint = onSurfaceVariant)
+                                    Text("${slang.views}", style = MaterialTheme.typography.labelMedium, color = onSurfaceVariant)
                                 }
                             }
                         }
@@ -234,20 +224,12 @@ fun SlangDetailScreen(
 
                     if (slang.meaning.isNotBlank()) {
                         SectionCard(title = stringResource(R.string.meaning)) {
-                            Text(
-                                slang.meaning,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = Color.White.copy(alpha = 0.85f),
-                            )
+                            Text(slang.meaning, style = MaterialTheme.typography.bodyLarge, color = onSurface)
                         }
                     }
                     if (!slang.meaningBurmese.isNullOrBlank()) {
                         SectionCard(title = stringResource(R.string.meaning_burmese)) {
-                            Text(
-                                slang.meaningBurmese,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = Color.White.copy(alpha = 0.85f),
-                            )
+                            Text(slang.meaningBurmese, style = MaterialTheme.typography.bodyLarge, color = onSurface)
                         }
                     }
                     if (slang.examples.isNotEmpty()) {
@@ -261,13 +243,13 @@ fun SlangDetailScreen(
                                         Text(
                                             "${i + 1}.",
                                             style = MaterialTheme.typography.bodySmall,
-                                            color = Indigo500.copy(alpha = 0.6f),
+                                            color = primary.copy(alpha = 0.7f),
                                             fontWeight = FontWeight.Bold,
                                         )
                                         Text(
                                             "\"$example\"",
                                             style = MaterialTheme.typography.bodyMedium,
-                                            color = Color.White.copy(alpha = 0.6f),
+                                            color = onSurfaceVariant,
                                             fontStyle = FontStyle.Italic,
                                         )
                                     }
@@ -280,7 +262,7 @@ fun SlangDetailScreen(
                             Text(
                                 text = stringResource(R.string.related_words),
                                 style = MaterialTheme.typography.labelLarge,
-                                color = Indigo500.copy(alpha = 0.7f),
+                                color = primary.copy(alpha = 0.8f),
                                 fontWeight = FontWeight.SemiBold,
                                 modifier = Modifier.padding(bottom = 8.dp),
                             )
@@ -292,21 +274,22 @@ fun SlangDetailScreen(
                                     Surface(
                                         onClick = { onSlangClick(related.slug.ifEmpty { related.id }) },
                                         shape = RoundedCornerShape(10.dp),
-                                        color = DetailSurface,
+                                        color = surfaceContainer,
+                                        tonalElevation = 2.dp,
                                     ) {
                                         Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
                                             Text(
                                                 related.word,
                                                 style = MaterialTheme.typography.labelLarge,
                                                 fontWeight = FontWeight.SemiBold,
-                                                color = Indigo500.copy(alpha = 0.85f),
+                                                color = primary,
                                             )
                                             Text(
                                                 related.meaning,
                                                 style = MaterialTheme.typography.labelSmall,
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis,
-                                                color = Color.White.copy(alpha = 0.4f),
+                                                color = onSurfaceVariant,
                                             )
                                         }
                                     }
@@ -325,6 +308,7 @@ fun SlangDetailScreen(
 private fun VotePill(
     active: Boolean,
     activeColor: Color,
+    onActiveColor: Color,
     enabled: Boolean,
     onClick: () -> Unit,
     icon: @Composable () -> Unit,
@@ -335,7 +319,7 @@ private fun VotePill(
         onClick = onClick,
         enabled = enabled,
         shape = RoundedCornerShape(50),
-        color = if (active) activeColor else activeColor.copy(alpha = 0.1f),
+        color = if (active) activeColor else activeColor.copy(alpha = 0.12f),
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
@@ -343,12 +327,7 @@ private fun VotePill(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             icon()
-            Text(
-                label,
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = labelColor,
-            )
+            Text(label, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, color = labelColor)
         }
     }
 }
@@ -357,14 +336,14 @@ private fun VotePill(
 private fun SectionCard(title: String, content: @Composable () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = DetailSurface),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         shape = RoundedCornerShape(14.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 title,
                 style = MaterialTheme.typography.labelMedium,
-                color = Indigo500.copy(alpha = 0.7f),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 8.dp),
             )
