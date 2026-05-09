@@ -7,6 +7,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
+    id("com.google.gms.google-services")
 }
 
 val localProperties = Properties()
@@ -30,8 +31,10 @@ android {
 
         val supabaseUrl = localProperties.getProperty("SUPABASE_URL", "")
         val supabaseAnonKey = localProperties.getProperty("SUPABASE_ANON_KEY", "")
+        val googleWebClientId = localProperties.getProperty("GOOGLE_WEB_CLIENT_ID", "")
         buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
     }
 
     buildTypes {
@@ -75,6 +78,9 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.navigation:navigation-compose:2.8.5")
 
+    // Splash screen
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
     // Supabase
     implementation(platform("io.github.jan-tennert.supabase:bom:3.1.1"))
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
@@ -87,6 +93,12 @@ dependencies {
     ksp("com.google.dagger:hilt-compiler:2.53.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
+    // Room
+    val roomVersion = "2.6.1"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
+
     // Coil (image loading)
     implementation("io.coil-kt:coil-compose:2.7.0")
 
@@ -95,4 +107,13 @@ dependencies {
 
     // Kotlinx Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+
+    // Google Sign-In via Credential Manager
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+
+    // Firebase (BOM keeps all versions aligned)
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-messaging-ktx")
 }
