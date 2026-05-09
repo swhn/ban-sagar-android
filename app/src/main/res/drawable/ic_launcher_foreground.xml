@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Speech-bubble icon with three text lines — represents a slang dictionary.
+  Viewport: 108×108dp (Android adaptive icon canvas).
+  Visual safe zone: 21–87dp. All content stays within it.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Speech bubble: rounded rect body + bottom-left tail -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M36,18
+            H72
+            C79.7,18 86,24.3 86,32
+            V60
+            C86,67.7 79.7,74 72,74
+            H56
+            L42,88
+            V74
+            H36
+            C28.3,74 22,67.7 22,60
+            V32
+            C22,24.3 28.3,18 36,18
+            Z" />
+
+    <!-- Line 1 — full width, represents word/headword -->
+    <path
+        android:fillColor="#6366F1"
+        android:pathData="M32,34 H74 V40 H32 Z" />
+
+    <!-- Line 2 — shorter, represents definition -->
+    <path
+        android:fillColor="#6366F1"
+        android:pathData="M32,46 H62 V52 H32 Z" />
+
+    <!-- Line 3 — medium, represents example -->
+    <path
+        android:fillColor="#6366F1"
+        android:pathData="M32,58 H68 V64 H32 Z" />
+
+</vector>
