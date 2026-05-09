@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -72,7 +73,7 @@ fun HomeScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        // ── Header ──────────────────────────────────────────────────────
+        // ── Header ───────────────────────────────────────────────────────────
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -91,7 +92,7 @@ fun HomeScreen(
             )
         }
 
-        // ── Sort tab row ─────────────────────────────────────────────────
+        // ── Sort tab row ──────────────────────────────────────────────────────
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -120,7 +121,7 @@ fun HomeScreen(
             }
         }
 
-        // ── Timeframe sub-tab row (Trending only) ────────────────────────
+        // ── Timeframe sub-tab row (Trending only) ─────────────────────────────
         AnimatedVisibility(
             visible = state.activeTab == SortTab.Trending,
             enter = expandVertically() + fadeIn(tween(180)),
@@ -148,7 +149,7 @@ fun HomeScreen(
             }
         }
 
-        // ── Content ──────────────────────────────────────────────────────
+        // ── Content ───────────────────────────────────────────────────────────
         when {
             state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
                 CircularProgressIndicator(color = Indigo500)
@@ -219,8 +220,8 @@ fun HomeScreen(
 // ── Reusable tab components ────────────────────────────────────────────────────
 
 /**
- * Primary sort tab: filled capsule when selected, subtle tinted surface when not.
- * Icon + label side by side.
+ * Primary sort tab: filled capsule when selected, subtle indigo tint when not.
+ * Soft glow shadow lifts the selected pill off the surface.
  */
 @Composable
 private fun SortTabPill(
@@ -231,23 +232,23 @@ private fun SortTabPill(
 ) {
     val bg by animateColorAsState(
         targetValue = if (selected) Indigo500 else Indigo500.copy(alpha = 0.10f),
-        animationSpec = tween(durationMillis = 220, easing = EaseInOutCubic),
-        label = "tab_bg",
+        animationSpec = tween(220, easing = EaseInOutCubic),
+        label = "sort_tab_bg",
     )
     val contentColor by animateColorAsState(
         targetValue = if (selected) Color.White else Indigo500.copy(alpha = 0.55f),
-        animationSpec = tween(durationMillis = 220, easing = EaseInOutCubic),
-        label = "tab_content",
+        animationSpec = tween(220, easing = EaseInOutCubic),
+        label = "sort_tab_content",
     )
 
     Row(
         modifier = Modifier
             .then(
                 if (selected) Modifier.shadow(
-                    elevation = 6.dp,
+                    elevation = 8.dp,
                     shape = CircleShape,
-                    ambientColor = Indigo500.copy(alpha = 0.35f),
-                    spotColor = Indigo500.copy(alpha = 0.35f),
+                    ambientColor = Indigo500.copy(alpha = 0.40f),
+                    spotColor  = Indigo500.copy(alpha = 0.40f),
                 ) else Modifier
             )
             .clip(CircleShape)
@@ -274,7 +275,8 @@ private fun SortTabPill(
 }
 
 /**
- * Compact timeframe pill: outlined with indigo accent when selected.
+ * Compact timeframe pill: outlined border with indigo accent when selected,
+ * barely-visible outline when unselected.
  */
 @Composable
 private fun TimeframePill(
@@ -284,50 +286,34 @@ private fun TimeframePill(
 ) {
     val bg by animateColorAsState(
         targetValue = if (selected) Indigo500.copy(alpha = 0.14f) else Color.Transparent,
-        animationSpec = tween(durationMillis = 200, easing = EaseInOutCubic),
+        animationSpec = tween(200, easing = EaseInOutCubic),
         label = "tf_bg",
     )
-    val textColor by animateColorAsState(
-        targetValue = if (selected) Indigo500 else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-        animationSpec = tween(durationMillis = 200, easing = EaseInOutCubic),
-        label = "tf_text",
+    val borderColor by animateColorAsState(
+        targetValue = if (selected) Indigo500 else Indigo500.copy(alpha = 0.22f),
+        animationSpec = tween(200, easing = EaseInOutCubic),
+        label = "tf_border",
     )
-    val strokeColor by animateColorAsState(
-        targetValue = if (selected) Indigo500 else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
-        animationSpec = tween(durationMillis = 200, easing = EaseInOutCubic),
-        label = "tf_stroke",
+    val textColor by animateColorAsState(
+        targetValue = if (selected) Indigo500 else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
+        animationSpec = tween(200, easing = EaseInOutCubic),
+        label = "tf_text",
     )
 
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(50))
             .background(bg)
-            // Draw the border via a thin outline shape overlay
-            .then(
-                Modifier.shadow(0.dp, RoundedCornerShape(50))
-            )
-            .background(strokeColor.copy(alpha = 0f))  // placeholder, real border below
+            .border(width = 1.dp, color = borderColor, shape = RoundedCornerShape(50))
             .clickable(onClick = onClick)
-            .padding(horizontal = 1.dp, vertical = 1.dp),
+            .padding(horizontal = 14.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center,
     ) {
-        // Inner box provides the visible border by using a slightly smaller fill
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(50))
-                .background(strokeColor)
-                .padding(horizontal = 1.dp, vertical = 1.dp)
-                .clip(RoundedCornerShape(50))
-                .background(if (selected) Indigo500.copy(alpha = 0.14f) else MaterialTheme.colorScheme.background)
-                .padding(horizontal = 13.dp, vertical = 6.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = label,
-                color = textColor,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-            )
-        }
+        Text(
+            text = label,
+            color = textColor,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+        )
     }
 }
