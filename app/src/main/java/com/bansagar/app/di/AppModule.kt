@@ -5,7 +5,10 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.preferencesDataStoreFile
+import androidx.room.Room
 import com.bansagar.app.BuildConfig
+import com.bansagar.app.data.local.AppDatabase
+import com.bansagar.app.data.local.SlangDao
 import com.bansagar.app.data.repository.AuthRepositoryImpl
 import com.bansagar.app.data.repository.ContributeRepositoryImpl
 import com.bansagar.app.data.repository.LeaderboardRepositoryImpl
@@ -55,8 +58,19 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSlangRepository(client: SupabaseClient): SlangRepository {
-        return SlangRepositoryImpl(client)
+    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
+        Room.databaseBuilder(context, AppDatabase::class.java, "ban_sagar.db")
+            .fallbackToDestructiveMigration()
+            .build()
+
+    @Provides
+    @Singleton
+    fun provideSlangDao(db: AppDatabase): SlangDao = db.slangDao()
+
+    @Provides
+    @Singleton
+    fun provideSlangRepository(client: SupabaseClient, dao: SlangDao): SlangRepository {
+        return SlangRepositoryImpl(client, dao)
     }
 
     @Provides

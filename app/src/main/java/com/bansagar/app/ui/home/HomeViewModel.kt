@@ -80,7 +80,7 @@ class HomeViewModel @Inject constructor(
                     isLoadingMore = false,
                     canLoadMore = newItems.size == PAGE_SIZE,
                 )
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 _uiState.value = _uiState.value.copy(isLoadingMore = false)
             }
         }
@@ -88,27 +88,56 @@ class HomeViewModel @Inject constructor(
 
     private fun loadSlangs() {
         currentOffset = 0
+        val tab = _uiState.value.activeTab
+        val timeframe = _uiState.value.activeTimeframe
+        val wasRefreshing = _uiState.value.isRefreshing
+
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null, canLoadMore = true)
+            // Step 1: show cached data instantly (only on initial/tab switch, not pull-to-refresh)
+            if (!wasRefreshing) {
+                val cached = getCachedForTab(tab, timeframe)
+                if (cached.isNotEmpty()) {
+                    _uiState.value = _uiState.value.copy(
+                        slangs = cached,
+                        isLoading = false,
+                        error = null,
+                        canLoadMore = cached.size == PAGE_SIZE && tab != SortTab.Random,
+                    )
+                } else {
+                    _uiState.value = _uiState.value.copy(isLoading = true, error = null, canLoadMore = true)
+                }
+            }
+
+            // Step 2: fetch fresh from network (always)
             try {
-                val s = _uiState.value
-                val slangs = fetchForTab(s.activeTab, s.activeTimeframe, PAGE_SIZE, 0)
+                val slangs = fetchForTab(tab, timeframe, PAGE_SIZE, 0)
                 currentOffset = slangs.size
                 _uiState.value = _uiState.value.copy(
                     slangs = slangs,
                     isLoading = false,
                     isRefreshing = false,
-                    canLoadMore = slangs.size == PAGE_SIZE && s.activeTab != SortTab.Random,
+                    canLoadMore = slangs.size == PAGE_SIZE && tab != SortTab.Random,
+                    error = null,
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Failed to load",
+                    error = if (_uiState.value.slangs.isNotEmpty()) null else e.message ?: "Failed to load",
                     isLoading = false,
                     isRefreshing = false,
                 )
             }
         }
     }
+
+    private suspend fun getCachedForTab(tab: SortTab, timeframe: Timeframe): List<Slang> = try {
+        when (tab) {
+            SortTab.Latest -> repository.getCachedLatest(PAGE_SIZE)
+            SortTab.Top -> repository.getCachedTop(PAGE_SIZE)
+            SortTab.Trending, SortTab.Random -> repository.getCachedAll().let { all ->
+                if (tab == SortTab.Random) all.shuffled().take(PAGE_SIZE) else all.take(PAGE_SIZE)
+            }
+        }
+    } catch (_: Exception) { emptyList() }
 
     private suspend fun fetchForTab(tab: SortTab, timeframe: Timeframe, limit: Int, offset: Int): List<Slang> =
         when (tab) {
