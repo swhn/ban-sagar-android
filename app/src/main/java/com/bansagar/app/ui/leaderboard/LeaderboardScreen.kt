@@ -52,6 +52,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.bansagar.app.R
+import com.bansagar.app.data.model.AppUser
 import com.bansagar.app.data.model.ContributorStats
 import com.bansagar.app.domain.model.ACHIEVEMENTS
 import com.bansagar.app.domain.model.Achievement
@@ -109,7 +110,7 @@ fun LeaderboardScreen(
             }
             selectedTab == 0 -> RankingsTab(
                 contributors = state.contributors,
-                currentUserId = state.currentUserId,
+                currentUserId = state.currentUser?.id,
                 onUserClick = { userId ->
                     viewModel.selectUser(userId)
                     selectedTab = 1
@@ -117,7 +118,7 @@ fun LeaderboardScreen(
             )
             else -> AchievementsTab(
                 contributors = state.contributors,
-                currentUserId = state.currentUserId,
+                currentUser = state.currentUser,
                 selectedUserId = state.selectedUserId,
                 onSelectUser = viewModel::selectUser,
             )
@@ -256,14 +257,26 @@ private fun ContributorRow(
 @Composable
 private fun AchievementsTab(
     contributors: List<ContributorStats>,
-    currentUserId: String?,
+    currentUser: AppUser?,
     selectedUserId: String?,
     onSelectUser: (String?) -> Unit,
 ) {
+    // Synthesize zero-stats for current user if they have no contributions yet
+    val syntheticCurrent = currentUser?.let { u ->
+        contributors.find { it.authorId == u.id } ?: ContributorStats(
+            authorId = u.id,
+            authorName = u.displayName ?: u.email.substringBefore('@').ifEmpty { "You" },
+            avatarUrl = u.avatarUrl,
+            approvedCount = 0,
+            totalCount = 0,
+            totalUpvotes = 0,
+            totalViews = 0,
+        )
+    }
+
     val viewUser = when {
         selectedUserId != null -> contributors.find { it.authorId == selectedUserId }
-        currentUserId != null -> contributors.find { it.authorId == currentUserId }
-        else -> null
+        else -> syntheticCurrent
     }
     val unlocked = viewUser?.let { u -> ACHIEVEMENTS.filter { it.check(u) } } ?: emptyList()
     val progress = if (ACHIEVEMENTS.isNotEmpty()) unlocked.size.toFloat() / ACHIEVEMENTS.size else 0f
@@ -298,7 +311,7 @@ private fun AchievementsTab(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
-                            if (selectedUserId != null && currentUserId != null) {
+                            if (selectedUserId != null && currentUser != null) {
                                 TextButton(onClick = { onSelectUser(null) }) {
                                     Text("View mine")
                                 }
@@ -374,9 +387,22 @@ private fun AchievementCard(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Text(achievement.icon, style = MaterialTheme.typography.titleMedium)
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(MaterialTheme.shapes.medium)
+                        .background(tierColor.copy(alpha = if (isUnlocked) 0.18f else 0.05f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = achievement.icon,
+                        contentDescription = null,
+                        tint = tierColor.copy(alpha = alpha),
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         achievement.title,

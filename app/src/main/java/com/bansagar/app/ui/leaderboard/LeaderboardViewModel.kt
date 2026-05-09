@@ -2,6 +2,7 @@ package com.bansagar.app.ui.leaderboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bansagar.app.data.model.AppUser
 import com.bansagar.app.data.model.ContributorStats
 import com.bansagar.app.domain.repository.AuthRepository
 import com.bansagar.app.domain.repository.LeaderboardRepository
@@ -14,7 +15,7 @@ import javax.inject.Inject
 
 data class LeaderboardUiState(
     val contributors: List<ContributorStats> = emptyList(),
-    val currentUserId: String? = null,
+    val currentUser: AppUser? = null,
     val isLoading: Boolean = true,
     val error: String? = null,
     val selectedUserId: String? = null,
@@ -32,7 +33,7 @@ class LeaderboardViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             authRepository.currentUserFlow.collect { user ->
-                _uiState.value = _uiState.value.copy(currentUserId = user?.id)
+                _uiState.value = _uiState.value.copy(currentUser = user)
             }
         }
         load()
