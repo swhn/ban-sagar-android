@@ -1,5 +1,6 @@
 package com.bansagar.app.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.bansagar.app.data.model.Slang
@@ -11,18 +12,18 @@ data class SlangEntity(
     val word: String,
     val pronunciation: String?,
     val meaning: String,
-    val meaningBurmese: String?,
+    @ColumnInfo(name = "meaning_burmese") val meaningBurmese: String?,
     val examples: List<String>,
-    val authorId: String,
-    val authorName: String?,
+    @ColumnInfo(name = "author_id") val authorId: String,
+    @ColumnInfo(name = "author_name") val authorName: String?,
     val status: String,
     val upvotes: Int,
     val downvotes: Int,
     val views: Int,
-    val viewHistory: Map<String, Int>,
-    val isNsfw: Boolean,
-    val createdAt: String,
-    val cachedAt: Long = System.currentTimeMillis(),
+    @ColumnInfo(name = "view_history") val viewHistory: Map<String, Int>,
+    @ColumnInfo(name = "is_nsfw") val isNsfw: Boolean,
+    @ColumnInfo(name = "created_at") val createdAt: String,
+    @ColumnInfo(name = "cached_at") val cachedAt: Long = System.currentTimeMillis(),
 )
 
 fun SlangEntity.toSlang() = Slang(
