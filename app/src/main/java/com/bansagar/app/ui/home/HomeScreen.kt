@@ -73,6 +73,7 @@ fun HomeScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
+        // ── Header ────────────────────────────────────────────────────────────────────────
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -91,6 +92,7 @@ fun HomeScreen(
             )
         }
 
+        // ── Sort tab row ───────────────────────────────────────────────────────────────
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -119,6 +121,7 @@ fun HomeScreen(
             }
         }
 
+        // ── Timeframe sub-tab row (Trending only) ───────────────────────────────────────────────
         AnimatedVisibility(
             visible = state.activeTab == SortTab.Trending,
             enter = expandVertically() + fadeIn(tween(180)),
@@ -146,6 +149,7 @@ fun HomeScreen(
             }
         }
 
+        // ── Content ────────────────────────────────────────────────────────────────────────
         when {
             state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
                 CircularProgressIndicator(color = Indigo500)
@@ -194,10 +198,15 @@ fun HomeScreen(
                         if (state.isLoadingMore) {
                             item {
                                 Box(
-                                    Modifier.fillMaxWidth().padding(16.dp),
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
                                     Alignment.Center,
                                 ) {
-                                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Indigo500)
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
+                                        color = Indigo500,
+                                    )
                                 }
                             }
                         }
@@ -208,39 +217,95 @@ fun HomeScreen(
     }
 }
 
+// ── Tab components ──────────────────────────────────────────────────────────────────────────────
+
 @Composable
-private fun SortTabPill(label: String, icon: ImageVector, selected: Boolean, onClick: () -> Unit) {
+private fun SortTabPill(
+    label: String,
+    icon: ImageVector,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
     val bg by animateColorAsState(
         targetValue = if (selected) Indigo500 else Indigo500.copy(alpha = 0.10f),
-        animationSpec = tween(220, easing = EaseInOutCubic), label = "sort_tab_bg",
+        animationSpec = tween(220, easing = EaseInOutCubic),
+        label = "sort_tab_bg",
     )
     val contentColor by animateColorAsState(
         targetValue = if (selected) Color.White else Indigo500.copy(alpha = 0.55f),
-        animationSpec = tween(220, easing = EaseInOutCubic), label = "sort_tab_content",
+        animationSpec = tween(220, easing = EaseInOutCubic),
+        label = "sort_tab_content",
     )
+
     Row(
         modifier = Modifier
-            .then(if (selected) Modifier.shadow(8.dp, CircleShape, ambientColor = Indigo500.copy(0.40f), spotColor = Indigo500.copy(0.40f)) else Modifier)
-            .clip(CircleShape).background(bg).clickable(onClick = onClick)
+            .then(
+                if (selected) Modifier.shadow(
+                    elevation = 8.dp,
+                    shape = CircleShape,
+                    ambientColor = Indigo500.copy(alpha = 0.40f),
+                    spotColor = Indigo500.copy(alpha = 0.40f),
+                ) else Modifier
+            )
+            .clip(CircleShape)
+            .background(bg)
+            .clickable(onClick = onClick)
             .padding(horizontal = 18.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
     ) {
-        Icon(icon, null, tint = contentColor, modifier = Modifier.size(15.dp))
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = contentColor,
+            modifier = Modifier.size(15.dp),
+        )
         Spacer(Modifier.width(6.dp))
-        Text(label, color = contentColor, style = MaterialTheme.typography.labelLarge, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium)
+        Text(
+            text = label,
+            color = contentColor,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+        )
     }
 }
 
 @Composable
-private fun TimeframePill(label: String, selected: Boolean, onClick: () -> Unit) {
-    val bg by animateColorAsState(targetValue = if (selected) Indigo500.copy(alpha = 0.14f) else Color.Transparent, animationSpec = tween(200, easing = EaseInOutCubic), label = "tf_bg")
-    val borderColor by animateColorAsState(targetValue = if (selected) Indigo500 else Indigo500.copy(alpha = 0.22f), animationSpec = tween(200, easing = EaseInOutCubic), label = "tf_border")
-    val textColor by animateColorAsState(targetValue = if (selected) Indigo500 else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f), animationSpec = tween(200, easing = EaseInOutCubic), label = "tf_text")
+private fun TimeframePill(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    val bg by animateColorAsState(
+        targetValue = if (selected) Indigo500.copy(alpha = 0.14f) else Color.Transparent,
+        animationSpec = tween(200, easing = EaseInOutCubic),
+        label = "tf_bg",
+    )
+    val borderColor by animateColorAsState(
+        targetValue = if (selected) Indigo500 else Indigo500.copy(alpha = 0.22f),
+        animationSpec = tween(200, easing = EaseInOutCubic),
+        label = "tf_border",
+    )
+    val textColor by animateColorAsState(
+        targetValue = if (selected) Indigo500 else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
+        animationSpec = tween(200, easing = EaseInOutCubic),
+        label = "tf_text",
+    )
+
     Box(
-        modifier = Modifier.clip(RoundedCornerShape(50)).background(bg).border(1.dp, borderColor, RoundedCornerShape(50)).clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 6.dp),
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .background(bg)
+            .border(width = 1.dp, color = borderColor, shape = RoundedCornerShape(50))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(label, color = textColor, style = MaterialTheme.typography.labelMedium, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal)
+        Text(
+            text = label,
+            color = textColor,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+        )
     }
 }
