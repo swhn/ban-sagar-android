@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Required to show notifications on Android 13+ (API 33+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".BanSagarApp"
@@ -14,10 +16,21 @@
         android:theme="@style/Theme.BanSagar"
         tools:targetApi="35">
 
+        <!-- Route FCM background notifications to our channel -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="ban_sagar_notifications" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/fcm_notification_color" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.BanSagar">
+            android:theme="@style/Theme.BanSagar.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -34,5 +47,15 @@
                     android:pathPrefix="/slang/" />
             </intent-filter>
         </activity>
+
+        <!-- FCM service for foreground messages and token refresh -->
+        <service
+            android:name=".service.BanSagarMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
     </application>
 </manifest>

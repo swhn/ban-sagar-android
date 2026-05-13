@@ -37,13 +37,33 @@ private val BrandDark = Color(0xFF06060B)
 
 @Composable
 fun SplashLoadingScreen() {
+    // Animate the progress bar position for a smooth "scanning" feel
+    val infiniteTransition = rememberInfiniteTransition(label = "splash_progress")
+    val progressOffset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1400, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "progress_offset",
+    )
+
     Box(
-        modifier = Modifier.fillMaxSize().background(BrandDark),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BrandDark),
         contentAlignment = Alignment.Center,
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            // Icon: same visual as the system splash (indigo circle + speech bubble)
             Box(
-                modifier = Modifier.size(96.dp).clip(CircleShape).background(BrandIndigo),
+                modifier = Modifier
+                    .size(96.dp)
+                    .clip(CircleShape)
+                    .background(BrandIndigo),
                 contentAlignment = Alignment.Center,
             ) {
                 Image(
@@ -52,18 +72,41 @@ fun SplashLoadingScreen() {
                     modifier = Modifier.size(72.dp),
                 )
             }
+
             Spacer(Modifier.height(24.dp))
-            Text("Ban Sagar", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            Text("ဗန်းစကား", color = Color.White.copy(alpha = 0.45f), fontSize = 15.sp)
+
+            Text(
+                text = "Ban Sagar",
+                color = Color.White,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+            )
+
+            Text(
+                text = "ဗန်းစကား",  // ဗန်းစကား
+                color = Color.White.copy(alpha = 0.45f),
+                fontSize = 15.sp,
+            )
+
             Spacer(Modifier.height(56.dp))
+
+            // Animated indeterminate progress bar
             LinearProgressIndicator(
-                modifier = Modifier.width(160.dp).padding(horizontal = 4.dp),
+                modifier = Modifier
+                    .width(160.dp)
+                    .padding(horizontal = 4.dp),
                 color = BrandIndigo,
                 trackColor = BrandIndigo.copy(alpha = 0.18f),
                 strokeCap = StrokeCap.Round,
             )
+
             Spacer(Modifier.height(12.dp))
-            Text("Loading…", color = Color.White.copy(alpha = 0.25f), fontSize = 12.sp)
+
+            Text(
+                text = "Loading…",
+                color = Color.White.copy(alpha = 0.25f),
+                fontSize = 12.sp,
+            )
         }
     }
 }

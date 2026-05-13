@@ -69,13 +69,18 @@ class HomeViewModel @Inject constructor(
     fun loadMore() {
         val state = _uiState.value
         if (state.isLoading || state.isLoadingMore || !state.canLoadMore ||
-            state.activeTab == SortTab.Random || currentOffset == 0
+            state.activeTab == SortTab.Random ||
+            // Don't load more until the first network page has landed (offset 0 would re-fetch
+            // the same items already visible and cause duplicate keys in LazyColumn).
+            currentOffset == 0
         ) return
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoadingMore = true)
             try {
                 val newItems = fetchForTab(state.activeTab, state.activeTimeframe, PAGE_SIZE, currentOffset)
                 currentOffset += newItems.size
+                // Read CURRENT slangs at write-time (not the captured snapshot) to avoid a race
+                // where loadSlangs() replaced the list between our fetch start and now.
                 _uiState.value = _uiState.value.copy(
                     slangs = (_uiState.value.slangs + newItems).distinctBy { it.id },
                     isLoadingMore = false,
@@ -94,6 +99,7 @@ class HomeViewModel @Inject constructor(
         val wasRefreshing = _uiState.value.isRefreshing
 
         viewModelScope.launch {
+            // Step 1: show cached data instantly (only on initial/tab switch, not pull-to-refresh)
             if (!wasRefreshing) {
                 val cached = getCachedForTab(tab, timeframe)
                 if (cached.isNotEmpty()) {
@@ -107,6 +113,9 @@ class HomeViewModel @Inject constructor(
                     _uiState.value = _uiState.value.copy(isLoading = true, error = null, canLoadMore = true)
                 }
             }
+
+            // Step 2: fetch fresh from network; currentOffset is set here so loadMore
+            // only becomes eligible after this completes.
             try {
                 val slangs = fetchForTab(tab, timeframe, PAGE_SIZE, 0)
                 currentOffset = slangs.size
