@@ -64,7 +64,10 @@ import com.bansagar.app.domain.model.AchievementTier
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LeaderboardScreen(onBack: () -> Unit, viewModel: LeaderboardViewModel = hiltViewModel()) {
+fun LeaderboardScreen(
+    onBack: () -> Unit,
+    viewModel: LeaderboardViewModel = hiltViewModel(),
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableIntStateOf(0) }
     val primary = MaterialTheme.colorScheme.primary
@@ -74,34 +77,85 @@ fun LeaderboardScreen(onBack: () -> Unit, viewModel: LeaderboardViewModel = hilt
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
             title = { Text("Leaderboard", fontWeight = FontWeight.SemiBold) },
-            navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) } },
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                }
+            },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
         )
-        Row(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            LeaderboardTab("Rankings", Icons.Outlined.EmojiEvents, selectedTab == 0, { selectedTab = 0 }, Modifier.weight(1f), primary, onPrimary, onSurfaceVariant)
-            LeaderboardTab("Achievements", Icons.Outlined.Stars, selectedTab == 1, { selectedTab = 1 }, Modifier.weight(1f), primary, onPrimary, onSurfaceVariant)
+
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            LeaderboardTab(
+                label = "Rankings", icon = Icons.Outlined.EmojiEvents,
+                selected = selectedTab == 0, onClick = { selectedTab = 0 },
+                modifier = Modifier.weight(1f),
+                primary = primary, onPrimary = onPrimary, onSurfaceVariant = onSurfaceVariant,
+            )
+            LeaderboardTab(
+                label = "Achievements", icon = Icons.Outlined.Stars,
+                selected = selectedTab == 1, onClick = { selectedTab = 1 },
+                modifier = Modifier.weight(1f),
+                primary = primary, onPrimary = onPrimary, onSurfaceVariant = onSurfaceVariant,
+            )
         }
+
         when {
-            state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator(color = primary) }
+            state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
+                CircularProgressIndicator(color = primary)
+            }
             state.error != null -> Box(Modifier.fillMaxSize(), Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(state.error ?: stringResource(R.string.error_generic), color = MaterialTheme.colorScheme.error)
                     Button(onClick = viewModel::load) { Text(stringResource(R.string.retry)) }
                 }
             }
-            selectedTab == 0 -> RankingsTab(state.contributors, state.currentUser?.id) { userId -> viewModel.selectUser(userId); selectedTab = 1 }
-            else -> AchievementsTab(state.contributors, state.currentUser, state.selectedUserId, viewModel::selectUser)
+            selectedTab == 0 -> RankingsTab(
+                contributors = state.contributors,
+                currentUserId = state.currentUser?.id,
+                onUserClick = { userId -> viewModel.selectUser(userId); selectedTab = 1 },
+            )
+            else -> AchievementsTab(
+                contributors = state.contributors,
+                currentUser = state.currentUser,
+                selectedUserId = state.selectedUserId,
+                onSelectUser = viewModel::selectUser,
+            )
         }
     }
 }
 
 @Composable
-private fun LeaderboardTab(label: String, icon: ImageVector, selected: Boolean, onClick: () -> Unit, modifier: Modifier, primary: Color, onPrimary: Color, onSurfaceVariant: Color) {
-    val bgColor by animateColorAsState(if (selected) primary else primary.copy(alpha = 0.1f), spring(stiffness = Spring.StiffnessMediumLow), label = "tabBg")
-    val contentColor by animateColorAsState(if (selected) onPrimary else onSurfaceVariant, spring(stiffness = Spring.StiffnessMediumLow), label = "tabContent")
+private fun LeaderboardTab(
+    label: String,
+    icon: ImageVector,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    primary: Color,
+    onPrimary: Color,
+    onSurfaceVariant: Color,
+) {
+    val bgColor by animateColorAsState(
+        targetValue = if (selected) primary else primary.copy(alpha = 0.1f),
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "tabBg",
+    )
+    val contentColor by animateColorAsState(
+        targetValue = if (selected) onPrimary else onSurfaceVariant,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "tabContent",
+    )
+
     Box(
-        modifier = modifier.shadow(if (selected) 6.dp else 0.dp, RoundedCornerShape(50), ambientColor = primary.copy(0.3f), spotColor = primary.copy(0.3f))
-            .background(bgColor, RoundedCornerShape(50)).clickable { onClick() }.padding(vertical = 10.dp),
+        modifier = modifier
+            .shadow(if (selected) 6.dp else 0.dp, RoundedCornerShape(50), ambientColor = primary.copy(0.3f), spotColor = primary.copy(0.3f))
+            .background(bgColor, RoundedCornerShape(50))
+            .clickable { onClick() }
+            .padding(vertical = 10.dp),
         contentAlignment = Alignment.Center,
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -114,6 +168,7 @@ private fun LeaderboardTab(label: String, icon: ImageVector, selected: Boolean, 
 @Composable
 private fun RankingsTab(contributors: List<ContributorStats>, currentUserId: String?, onUserClick: (String) -> Unit) {
     val primary = MaterialTheme.colorScheme.primary
+    val surfaceContainer = MaterialTheme.colorScheme.surfaceContainer
     val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
     val currentUser = contributors.find { it.authorId == currentUserId }
     val currentUserRank = contributors.indexOfFirst { it.authorId == currentUserId } + 1
@@ -123,7 +178,7 @@ private fun RankingsTab(contributors: List<ContributorStats>, currentUserId: Str
             item {
                 Surface(shape = RoundedCornerShape(14.dp), color = primary.copy(alpha = 0.1f), modifier = Modifier.fillMaxWidth()) {
                     Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        ContributorAvatar(currentUser, 44)
+                        ContributorAvatar(currentUser, size = 44)
                         Column(modifier = Modifier.weight(1f)) {
                             Text("Your Rank", style = MaterialTheme.typography.labelSmall, color = onSurfaceVariant)
                             Text("#$currentUserRank of ${contributors.size}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = primary)
@@ -135,10 +190,19 @@ private fun RankingsTab(contributors: List<ContributorStats>, currentUserId: Str
             }
         }
         if (contributors.isEmpty()) {
-            item { Box(Modifier.fillMaxWidth().padding(top = 60.dp), Alignment.Center) { Text("No contributors yet", color = onSurfaceVariant) } }
+            item {
+                Box(modifier = Modifier.fillMaxWidth().padding(top = 60.dp), contentAlignment = Alignment.Center) {
+                    Text("No contributors yet", color = onSurfaceVariant)
+                }
+            }
         }
         itemsIndexed(contributors) { index, contributor ->
-            ContributorRow(index + 1, contributor, contributor.authorId == currentUserId, ACHIEVEMENTS.count { it.check(contributor) }) { onUserClick(contributor.authorId) }
+            ContributorRow(
+                rank = index + 1, contributor = contributor,
+                isCurrentUser = contributor.authorId == currentUserId,
+                badgeCount = ACHIEVEMENTS.count { it.check(contributor) },
+                onClick = { onUserClick(contributor.authorId) },
+            )
         }
     }
 }
@@ -146,7 +210,12 @@ private fun RankingsTab(contributors: List<ContributorStats>, currentUserId: Str
 @Composable
 private fun ContributorRow(rank: Int, contributor: ContributorStats, isCurrentUser: Boolean, badgeCount: Int, onClick: () -> Unit) {
     val primary = MaterialTheme.colorScheme.primary
-    Surface(modifier = Modifier.fillMaxWidth().clickable { onClick() }, color = if (isCurrentUser) primary.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surfaceContainer, shape = RoundedCornerShape(14.dp), tonalElevation = 1.dp) {
+    Surface(
+        modifier = Modifier.fillMaxWidth().clickable { onClick() },
+        color = if (isCurrentUser) primary.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surfaceContainer,
+        shape = RoundedCornerShape(14.dp),
+        tonalElevation = 1.dp,
+    ) {
         Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Box(modifier = Modifier.width(28.dp), contentAlignment = Alignment.Center) {
                 when (rank) {
@@ -156,7 +225,7 @@ private fun ContributorRow(rank: Int, contributor: ContributorStats, isCurrentUs
                     else -> Text("#$rank", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            ContributorAvatar(contributor, 36)
+            ContributorAvatar(contributor, size = 36)
             Column(modifier = Modifier.weight(1f)) {
                 Text(contributor.authorName, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurface)
                 Text("$badgeCount badges", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -172,8 +241,12 @@ private fun AchievementsTab(contributors: List<ContributorStats>, currentUser: A
     val primary = MaterialTheme.colorScheme.primary
     val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
     val surfaceContainer = MaterialTheme.colorScheme.surfaceContainer
+
     val syntheticCurrent = currentUser?.let { u ->
-        contributors.find { it.authorId == u.id } ?: ContributorStats(authorId = u.id, authorName = u.displayName ?: u.email.substringBefore('@').ifEmpty { "You" }, avatarUrl = u.avatarUrl, approvedCount = 0, totalCount = 0, totalUpvotes = 0, totalViews = 0)
+        contributors.find { it.authorId == u.id } ?: ContributorStats(
+            authorId = u.id, authorName = u.displayName ?: u.email.substringBefore('@').ifEmpty { "You" },
+            avatarUrl = u.avatarUrl, approvedCount = 0, totalCount = 0, totalUpvotes = 0, totalViews = 0,
+        )
     }
     val viewUser = if (selectedUserId != null) contributors.find { it.authorId == selectedUserId } else syntheticCurrent
     val unlocked = viewUser?.let { u -> ACHIEVEMENTS.filter { it.check(u) } } ?: emptyList()
@@ -185,28 +258,33 @@ private fun AchievementsTab(contributors: List<ContributorStats>, currentUser: A
                 Surface(shape = RoundedCornerShape(14.dp), color = surfaceContainer, tonalElevation = 1.dp) {
                     Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            ContributorAvatar(viewUser, 48)
+                            ContributorAvatar(viewUser, size = 48)
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(viewUser.authorName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
                                 Text("${unlocked.size}/${ACHIEVEMENTS.size} unlocked", style = MaterialTheme.typography.labelSmall, color = onSurfaceVariant)
                             }
-                            if (selectedUserId != null && currentUser != null) TextButton(onClick = { onSelectUser(null) }) { Text("View mine") }
+                            if (selectedUserId != null && currentUser != null) {
+                                TextButton(onClick = { onSelectUser(null) }) { Text("View mine") }
+                            }
                         }
                         LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth(), color = primary, trackColor = primary.copy(alpha = 0.15f))
                     }
                 }
             } else {
                 Surface(shape = RoundedCornerShape(14.dp), color = surfaceContainer, tonalElevation = 1.dp) {
-                    Box(Modifier.fillMaxWidth().padding(32.dp), Alignment.Center) { Text("Sign in to track your achievements", color = onSurfaceVariant, style = MaterialTheme.typography.bodyMedium) }
+                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                        Text("Sign in to track your achievements", color = onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
+                    }
                 }
             }
         }
         items(ACHIEVEMENTS.chunked(2)) { pair ->
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 pair.forEach { achievement ->
-                    AchievementCard(Modifier.weight(1f), achievement, viewUser?.let { achievement.check(it) } ?: false)
+                    val isUnlocked = viewUser?.let { achievement.check(it) } ?: false
+                    AchievementCard(modifier = Modifier.weight(1f), achievement = achievement, isUnlocked = isUnlocked)
                 }
-                if (pair.size == 1) Spacer(Modifier.weight(1f))
+                if (pair.size == 1) Spacer(modifier = Modifier.weight(1f))
             }
         }
     }
@@ -221,10 +299,15 @@ private fun AchievementCard(modifier: Modifier, achievement: Achievement, isUnlo
         AchievementTier.LEGENDARY -> Color(0xFF9C27B0)
     }
     val alpha = if (isUnlocked) 1f else 0.35f
-    Surface(modifier = modifier, color = if (isUnlocked) tierColor.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surfaceContainer, shape = RoundedCornerShape(14.dp), tonalElevation = if (isUnlocked) 0.dp else 1.dp) {
+    val surfaceColor = if (isUnlocked) tierColor.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surfaceContainer
+
+    Surface(modifier = modifier, color = surfaceColor, shape = RoundedCornerShape(14.dp), tonalElevation = if (isUnlocked) 0.dp else 1.dp) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Box(modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)).background(tierColor.copy(alpha = if (isUnlocked) 0.18f else 0.06f)), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)).background(tierColor.copy(alpha = if (isUnlocked) 0.18f else 0.06f)),
+                    contentAlignment = Alignment.Center,
+                ) {
                     Icon(achievement.icon, null, Modifier.size(18.dp), tint = tierColor.copy(alpha = alpha))
                 }
                 Column(modifier = Modifier.weight(1f)) {
@@ -244,8 +327,16 @@ private fun ContributorAvatar(contributor: ContributorStats, size: Int) {
     if (contributor.avatarUrl != null) {
         AsyncImage(model = contributor.avatarUrl, contentDescription = null, modifier = Modifier.size(size.dp).clip(CircleShape))
     } else {
-        Box(modifier = Modifier.size(size.dp).clip(CircleShape).background(primary.copy(alpha = 0.15f)), contentAlignment = Alignment.Center) {
-            Text(contributor.authorName.take(1).uppercase(), style = if (size >= 44) MaterialTheme.typography.titleMedium else MaterialTheme.typography.labelLarge, color = primary, fontWeight = FontWeight.Bold)
+        Box(
+            modifier = Modifier.size(size.dp).clip(CircleShape).background(primary.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = contributor.authorName.take(1).uppercase(),
+                style = if (size >= 44) MaterialTheme.typography.titleMedium else MaterialTheme.typography.labelLarge,
+                color = primary,
+                fontWeight = FontWeight.Bold,
+            )
         }
     }
 }
