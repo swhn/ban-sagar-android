@@ -79,7 +79,7 @@ class AddSlangViewModel @Inject constructor(
 
     fun submit() {
         val s = _uiState.value
-        if (s.word.isBlank() || s.meaning.isBlank() || s.meaningBurmese.isBlank()) return
+        if (s.word.isBlank() || s.pronunciation.isBlank() || s.meaning.isBlank() || s.meaningBurmese.isBlank()) return
         viewModelScope.launch {
             _uiState.value = s.copy(isSubmitting = true, error = null)
             try {
@@ -93,7 +93,7 @@ class AddSlangViewModel @Inject constructor(
                 val submission = SlangSubmission(
                     word = s.word.trim(),
                     slug = slug,
-                    pronunciation = s.pronunciation.trim().takeIf { it.isNotEmpty() },
+                    pronunciation = s.pronunciation.trim(),
                     meaning = s.meaning.trim(),
                     meaningBurmese = s.meaningBurmese.trim().takeIf { it.isNotEmpty() },
                     examples = s.examples.filter { it.isNotBlank() }.map { it.trim() },

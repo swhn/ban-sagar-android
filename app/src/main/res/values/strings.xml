@@ -63,6 +63,7 @@
     <string name="leaderboard">Leaderboard</string>
     <string name="leaderboard_rankings">Rankings</string>
     <string name="leaderboard_achievements">Achievements</string>
+    <string name="view_leaderboard">View Leaderboard</string>
 
     <!-- Contribute -->
     <string name="contribute_title">Add a Word</string>
@@ -71,7 +72,7 @@
     <string name="contribute_submitted_body">Your word has been submitted for review. You can check its status in My Submissions.</string>
     <string name="contribute_add_another">Add Another Word</string>
     <string name="field_word">Word *</string>
-    <string name="field_pronunciation">Pronunciation (optional)</string>
+    <string name="field_pronunciation">Pronunciation *</string>
     <string name="field_meaning">English Meaning *</string>
     <string name="field_meaning_burmese">Burmese Meaning *</string>
     <string name="field_examples">Examples (optional, up to 5)</string>
@@ -91,6 +92,12 @@
     <!-- Notifications -->
     <string name="notification_channel_name">Notifications</string>
     <string name="notification_channel_description">Approval updates and badge unlocks</string>
+
+    <!-- NSFW warning dialog -->
+    <string name="nsfw_warning_title">Sensitive Content Warning</string>
+    <string name="nsfw_warning_body">You are about to enable sensitive (NSFW) content. This will show adult and explicit slang in lists and detail pages. Are you sure?</string>
+    <string name="nsfw_warning_confirm">Enable</string>
+    <string name="cancel">Cancel</string>
 
     <!-- Generic -->
     <string name="empty_home">No slangs found</string>

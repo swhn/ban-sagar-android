@@ -50,8 +50,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bansagar.app.R
 import com.bansagar.app.ui.auth.AuthViewModel
 
-private val Rose400 = Color(0xFFFB7185)
-
 @Composable
 fun ContributeScreen(
     authViewModel: AuthViewModel,
@@ -284,7 +282,11 @@ fun ContributeScreen(
 
         Button(
             onClick = viewModel::submit,
-            enabled = !state.isSubmitting && state.word.isNotBlank() && state.meaning.isNotBlank() && state.meaningBurmese.isNotBlank(),
+            enabled = !state.isSubmitting
+                && state.word.isNotBlank()
+                && state.pronunciation.isNotBlank()
+                && state.meaning.isNotBlank()
+                && state.meaningBurmese.isNotBlank(),
             modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
             colors = ButtonDefaults.buttonColors(containerColor = primary),
             shape = RoundedCornerShape(12.dp),

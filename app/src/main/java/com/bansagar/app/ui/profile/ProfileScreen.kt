@@ -20,12 +20,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.NavigateNext
 import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.ExitToApp
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.ThumbUp
-import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.WarningAmber
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -37,9 +39,13 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -75,6 +81,33 @@ fun ProfileScreen(
     val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
     val surfaceContainer = MaterialTheme.colorScheme.surfaceContainer
 
+    var showNsfwWarningDialog by remember { mutableStateOf(false) }
+
+    if (showNsfwWarningDialog) {
+        AlertDialog(
+            onDismissRequest = { showNsfwWarningDialog = false },
+            icon = { Icon(Icons.Outlined.WarningAmber, null, tint = MaterialTheme.colorScheme.error) },
+            title = { Text(stringResource(R.string.nsfw_warning_title), fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.nsfw_warning_body)) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.setShowNsfw(true)
+                        showNsfwWarningDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                ) {
+                    Text(stringResource(R.string.nsfw_warning_confirm), fontWeight = FontWeight.SemiBold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showNsfwWarningDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
+    }
+
     if (!state.isLoading && state.user == null) {
         Box(
             modifier = Modifier
@@ -105,7 +138,7 @@ fun ProfileScreen(
                     style = MaterialTheme.typography.bodyMedium,
                     color = onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(bottom = 24.dp),
+                    modifier = Modifier.padding(bottom = 16.dp),
                 )
                 Button(
                     onClick = { authViewModel.signIn(context) { _, _ -> } },
@@ -117,6 +150,15 @@ fun ProfileScreen(
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(R.string.sign_in_google), fontWeight = FontWeight.SemiBold)
                 }
+                OutlinedButton(
+                    onClick = onNavigateToLeaderboard,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Icon(Icons.Outlined.EmojiEvents, null, Modifier.size(18.dp), tint = Amber400)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.view_leaderboard))
+                }
             }
         }
         return
@@ -127,7 +169,6 @@ fun ProfileScreen(
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
     ) {
-        // Gradient header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -274,7 +315,14 @@ fun ProfileScreen(
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.padding(top = 14.dp, bottom = 4.dp),
                     )
-                    PrefRow(stringResource(R.string.show_sensitive), showNsfw, viewModel::setShowNsfw)
+                    PrefRow(
+                        label = stringResource(R.string.show_sensitive),
+                        checked = showNsfw,
+                        onToggle = { newValue ->
+                            if (newValue) showNsfwWarningDialog = true
+                            else viewModel.setShowNsfw(false)
+                        },
+                    )
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     PrefRow(stringResource(R.string.pref_notify_approved), user.notifyApproved, viewModel::toggleNotifyApproved)
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
