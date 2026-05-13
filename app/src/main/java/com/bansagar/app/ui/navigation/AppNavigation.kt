@@ -49,7 +49,10 @@ fun AppNavigation() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    // Activity-scoped: shared down to all screens that need it
     val authViewModel: AuthViewModel = hiltViewModel()
+
+    // Tracks auth session restore + Room warmup; shows loading overlay until done
     val initViewModel: AppInitViewModel = hiltViewModel()
     val isInitializing by initViewModel.isInitializing.collectAsStateWithLifecycle()
 
@@ -80,10 +83,14 @@ fun AppNavigation() {
                 modifier = Modifier.padding(innerPadding),
             ) {
                 composable(Routes.HOME) {
-                    HomeScreen(onSlangClick = { slug -> navController.navigate(Routes.slangDetail(slug)) })
+                    HomeScreen(
+                        onSlangClick = { slug -> navController.navigate(Routes.slangDetail(slug)) },
+                    )
                 }
                 composable(Routes.SEARCH) {
-                    SearchScreen(onSlangClick = { slug -> navController.navigate(Routes.slangDetail(slug)) })
+                    SearchScreen(
+                        onSlangClick = { slug -> navController.navigate(Routes.slangDetail(slug)) },
+                    )
                 }
                 composable(Routes.CONTRIBUTE) {
                     ContributeScreen(
@@ -104,7 +111,9 @@ fun AppNavigation() {
                     )
                 }
                 composable(Routes.LEADERBOARD) {
-                    LeaderboardScreen(onBack = { navController.popBackStack() })
+                    LeaderboardScreen(
+                        onBack = { navController.popBackStack() },
+                    )
                 }
                 composable(
                     route = Routes.SLANG_DETAIL,
@@ -121,9 +130,11 @@ fun AppNavigation() {
             }
         }
 
+        // Branded loading overlay — sits on top of everything while the app initialises.
+        // AnimatedVisibility with fadeOut gives a smooth handoff to the home screen content.
         AnimatedVisibility(
             visible = isInitializing,
-            enter = EnterTransition.None,
+            enter = EnterTransition.None,   // already visible at startup; no enter animation needed
             exit = fadeOut(animationSpec = tween(durationMillis = 450)),
             modifier = Modifier.fillMaxSize(),
         ) {
