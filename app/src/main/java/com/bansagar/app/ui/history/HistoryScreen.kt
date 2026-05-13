@@ -70,7 +70,11 @@ fun HistoryScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
             title = { Text(stringResource(R.string.my_submissions), fontWeight = FontWeight.SemiBold) },
-            navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) } },
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                }
+            },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
         )
 
@@ -80,19 +84,37 @@ fun HistoryScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items(filters) { (status, label) ->
-                StatusFilterPill(label = label, status = status, selected = state.filterStatus == status, onClick = { viewModel.setFilter(status) })
+                StatusFilterPill(
+                    label = label,
+                    status = status,
+                    selected = state.filterStatus == status,
+                    onClick = { viewModel.setFilter(status) },
+                )
             }
         }
 
         when {
-            state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator(color = MaterialTheme.colorScheme.primary) }
-            displayed.isEmpty() -> Box(Modifier.fillMaxSize(), Alignment.Center) {
-                Text(stringResource(R.string.empty_history), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
-            else -> LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            displayed.isEmpty() -> Box(Modifier.fillMaxSize(), Alignment.Center) {
+                Text(
+                    text = stringResource(R.string.empty_history),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            else -> LazyColumn(
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
                 items(items = displayed, key = { it.id }) { slang ->
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        SlangCard(slang = slang, showNsfw = true, onClick = { onSlangClick(slang.slug.ifEmpty { slang.id }) })
+                        SlangCard(
+                            slang = slang,
+                            showNsfw = true,
+                            onClick = { onSlangClick(slang.slug.ifEmpty { slang.id }) },
+                        )
                         StatusBadge(slang.status)
                     }
                 }
@@ -102,7 +124,12 @@ fun HistoryScreen(
 }
 
 @Composable
-private fun StatusFilterPill(label: String, status: String?, selected: Boolean, onClick: () -> Unit) {
+private fun StatusFilterPill(
+    label: String,
+    status: String?,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
     val accentColor = when (status) {
         "approved" -> Emerald400
         "rejected" -> Rose400
@@ -110,18 +137,33 @@ private fun StatusFilterPill(label: String, status: String?, selected: Boolean, 
         else -> MaterialTheme.colorScheme.primary
     }
     val onPrimary = MaterialTheme.colorScheme.onPrimary
-    val bgColor by animateColorAsState(targetValue = if (selected) accentColor else accentColor.copy(alpha = 0.12f), animationSpec = spring(stiffness = Spring.StiffnessMediumLow), label = "filterBg")
-    val textColor by animateColorAsState(
-        targetValue = if (selected) { if (status == null) onPrimary else Color.White } else accentColor,
-        animationSpec = spring(stiffness = Spring.StiffnessMediumLow), label = "filterText",
+    val bgColor by animateColorAsState(
+        targetValue = if (selected) accentColor else accentColor.copy(alpha = 0.12f),
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "filterBg",
     )
+    val textColor by animateColorAsState(
+        targetValue = if (selected) {
+            if (status == null) onPrimary else Color.White
+        } else accentColor,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "filterText",
+    )
+
     Box(
         modifier = Modifier
             .shadow(if (selected) 6.dp else 0.dp, RoundedCornerShape(50), ambientColor = accentColor.copy(0.25f), spotColor = accentColor.copy(0.25f))
-            .background(bgColor, RoundedCornerShape(50)).clickable { onClick() }.padding(horizontal = 14.dp, vertical = 7.dp),
+            .background(bgColor, RoundedCornerShape(50))
+            .clickable { onClick() }
+            .padding(horizontal = 14.dp, vertical = 7.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(label, style = MaterialTheme.typography.labelMedium, color = textColor, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal)
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = textColor,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+        )
     }
 }
 
@@ -132,5 +174,11 @@ private fun StatusBadge(status: String) {
         "rejected" -> Rose400 to stringResource(R.string.status_rejected)
         else -> Amber400 to stringResource(R.string.status_pending)
     }
-    Text(label, style = MaterialTheme.typography.labelSmall, color = color, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 16.dp))
+    Text(
+        text = label,
+        style = MaterialTheme.typography.labelSmall,
+        color = color,
+        fontWeight = FontWeight.SemiBold,
+        modifier = Modifier.padding(start = 16.dp),
+    )
 }
