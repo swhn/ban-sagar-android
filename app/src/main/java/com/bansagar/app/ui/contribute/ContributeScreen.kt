@@ -50,6 +50,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bansagar.app.R
 import com.bansagar.app.ui.auth.AuthViewModel
 
+private val Rose400 = Color(0xFFFB7185)
+
 @Composable
 fun ContributeScreen(
     authViewModel: AuthViewModel,
@@ -66,15 +68,36 @@ fun ContributeScreen(
 
     if (!isSignedIn) {
         Box(
-            modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(primary.copy(alpha = 0.08f), Color.Transparent), endY = 600f)),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Brush.verticalGradient(listOf(primary.copy(alpha = 0.08f), Color.Transparent), endY = 600f)),
             contentAlignment = Alignment.Center,
         ) {
-            Column(modifier = Modifier.padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Box(modifier = Modifier.size(80.dp).background(primary.copy(alpha = 0.1f), CircleShape), contentAlignment = Alignment.Center) {
+            Column(
+                modifier = Modifier.padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Box(
+                    modifier = Modifier.size(80.dp).background(primary.copy(alpha = 0.1f), CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
                     Icon(Icons.Outlined.Edit, null, Modifier.size(36.dp), tint = primary.copy(alpha = 0.7f))
                 }
-                Text(stringResource(R.string.contribute_title), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp), color = onSurface)
-                Text(stringResource(R.string.contribute_sign_in_prompt), style = MaterialTheme.typography.bodyMedium, color = onSurfaceVariant, textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 24.dp))
+                Text(
+                    stringResource(R.string.contribute_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(top = 8.dp),
+                    color = onSurface,
+                )
+                Text(
+                    stringResource(R.string.contribute_sign_in_prompt),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(bottom = 24.dp),
+                )
                 Button(
                     onClick = { authViewModel.signIn(context) { _, _ -> } },
                     colors = ButtonDefaults.buttonColors(containerColor = primary),
@@ -92,13 +115,37 @@ fun ContributeScreen(
 
     if (state.submitted) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column(modifier = Modifier.padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Box(modifier = Modifier.size(72.dp).background(primary.copy(alpha = 0.12f), CircleShape), contentAlignment = Alignment.Center) {
+            Column(
+                modifier = Modifier.padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Box(
+                    modifier = Modifier.size(72.dp).background(primary.copy(alpha = 0.12f), CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
                     Text("✓", style = MaterialTheme.typography.headlineLarge, color = primary)
                 }
-                Text(stringResource(R.string.contribute_submitted_title), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp), color = onSurface)
-                Text(stringResource(R.string.contribute_submitted_body), style = MaterialTheme.typography.bodyMedium, color = onSurfaceVariant, textAlign = TextAlign.Center, modifier = Modifier.padding(bottom = 24.dp))
-                Button(onClick = viewModel::resetForm, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = primary), shape = RoundedCornerShape(12.dp)) {
+                Text(
+                    stringResource(R.string.contribute_submitted_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(top = 8.dp),
+                    color = onSurface,
+                )
+                Text(
+                    stringResource(R.string.contribute_submitted_body),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(bottom = 24.dp),
+                )
+                Button(
+                    onClick = viewModel::resetForm,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = primary),
+                    shape = RoundedCornerShape(12.dp),
+                ) {
                     Text(stringResource(R.string.contribute_add_another), fontWeight = FontWeight.SemiBold)
                 }
                 OutlinedButton(onClick = onNavigateToHistory, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
@@ -109,8 +156,15 @@ fun ContributeScreen(
         return
     }
 
-    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+    Column(
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Text(stringResource(R.string.contribute_title), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = onSurface)
             TextButton(onClick = onNavigateToHistory) {
                 Icon(Icons.Outlined.History, null, Modifier.size(15.dp))
@@ -119,38 +173,86 @@ fun ContributeScreen(
             }
         }
 
-        FormSection("THE WORD", surfaceContainer, primary) {
+        FormSection(label = "THE WORD", surfaceContainer = surfaceContainer, primary = primary) {
             OutlinedTextField(
-                value = state.word, onValueChange = viewModel::onWordChange,
-                label = { Text(stringResource(R.string.field_word)) }, modifier = Modifier.fillMaxWidth(), singleLine = true, shape = RoundedCornerShape(10.dp),
-                trailingIcon = { if (state.isCheckingDuplicates) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = primary) },
+                value = state.word,
+                onValueChange = viewModel::onWordChange,
+                label = { Text(stringResource(R.string.field_word)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                shape = RoundedCornerShape(10.dp),
+                trailingIcon = {
+                    if (state.isCheckingDuplicates)
+                        CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = primary)
+                },
             )
-            OutlinedTextField(value = state.pronunciation, onValueChange = viewModel::onPronunciationChange, label = { Text(stringResource(R.string.field_pronunciation)) }, modifier = Modifier.fillMaxWidth(), singleLine = true, shape = RoundedCornerShape(10.dp))
+            OutlinedTextField(
+                value = state.pronunciation,
+                onValueChange = viewModel::onPronunciationChange,
+                label = { Text(stringResource(R.string.field_pronunciation)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                shape = RoundedCornerShape(10.dp),
+            )
             if (state.duplicates.isNotEmpty()) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.errorContainer, RoundedCornerShape(10.dp)).padding(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.errorContainer, RoundedCornerShape(10.dp))
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.Top,
                 ) {
                     Icon(Icons.Outlined.WarningAmber, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onErrorContainer)
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text(stringResource(R.string.duplicate_warning), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onErrorContainer, fontWeight = FontWeight.SemiBold)
-                        state.duplicates.forEach { dup -> Text("• ${dup.word} (${dup.status})", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onErrorContainer) }
+                        Text(
+                            stringResource(R.string.duplicate_warning),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        state.duplicates.forEach { dup ->
+                            Text("• ${dup.word} (${dup.status})", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onErrorContainer)
+                        }
                     }
                 }
             }
         }
 
-        FormSection("DEFINITIONS", surfaceContainer, primary) {
-            OutlinedTextField(value = state.meaning, onValueChange = viewModel::onMeaningChange, label = { Text(stringResource(R.string.field_meaning)) }, modifier = Modifier.fillMaxWidth(), minLines = 3, shape = RoundedCornerShape(10.dp))
-            OutlinedTextField(value = state.meaningBurmese, onValueChange = viewModel::onMeaningBurmeseChange, label = { Text(stringResource(R.string.field_meaning_burmese)) }, modifier = Modifier.fillMaxWidth(), minLines = 3, shape = RoundedCornerShape(10.dp))
+        FormSection(label = "DEFINITIONS", surfaceContainer = surfaceContainer, primary = primary) {
+            OutlinedTextField(
+                value = state.meaning,
+                onValueChange = viewModel::onMeaningChange,
+                label = { Text(stringResource(R.string.field_meaning)) },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3,
+                shape = RoundedCornerShape(10.dp),
+            )
+            OutlinedTextField(
+                value = state.meaningBurmese,
+                onValueChange = viewModel::onMeaningBurmeseChange,
+                label = { Text(stringResource(R.string.field_meaning_burmese)) },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3,
+                shape = RoundedCornerShape(10.dp),
+            )
         }
 
-        FormSection("EXAMPLES", surfaceContainer, primary) {
+        FormSection(label = "EXAMPLES", surfaceContainer = surfaceContainer, primary = primary) {
             state.examples.forEachIndexed { index, example ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    OutlinedTextField(value = example, onValueChange = { viewModel.onExampleChange(index, it) }, modifier = Modifier.weight(1f), singleLine = true, shape = RoundedCornerShape(10.dp), placeholder = { Text("Example ${index + 1}") })
+                    OutlinedTextField(
+                        value = example,
+                        onValueChange = { viewModel.onExampleChange(index, it) },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        shape = RoundedCornerShape(10.dp),
+                        placeholder = { Text("Example ${index + 1}") },
+                    )
                     if (state.examples.size > 1) {
-                        IconButton(onClick = { viewModel.removeExample(index) }) { Icon(Icons.Outlined.Close, null, Modifier.size(18.dp), tint = onSurfaceVariant) }
+                        IconButton(onClick = { viewModel.removeExample(index) }) {
+                            Icon(Icons.Outlined.Close, null, Modifier.size(18.dp), tint = onSurfaceVariant)
+                        }
                     }
                 }
             }
@@ -164,7 +266,10 @@ fun ContributeScreen(
         }
 
         Surface(shape = RoundedCornerShape(14.dp), color = surfaceContainer, tonalElevation = 1.dp, modifier = Modifier.fillMaxWidth()) {
-            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(stringResource(R.string.field_nsfw), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, color = onSurface)
                     Text("Mark as sensitive / adult content", style = MaterialTheme.typography.labelSmall, color = onSurfaceVariant)
@@ -173,7 +278,9 @@ fun ContributeScreen(
             }
         }
 
-        state.error?.let { err -> Text(err, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
+        state.error?.let { err ->
+            Text(err, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
 
         Button(
             onClick = viewModel::submit,
@@ -182,8 +289,11 @@ fun ContributeScreen(
             colors = ButtonDefaults.buttonColors(containerColor = primary),
             shape = RoundedCornerShape(12.dp),
         ) {
-            if (state.isSubmitting) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
-            else Text(stringResource(R.string.submit), fontWeight = FontWeight.SemiBold)
+            if (state.isSubmitting) {
+                CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
+            } else {
+                Text(stringResource(R.string.submit), fontWeight = FontWeight.SemiBold)
+            }
         }
 
         Spacer(Modifier.padding(bottom = 8.dp))
@@ -191,9 +301,17 @@ fun ContributeScreen(
 }
 
 @Composable
-private fun FormSection(label: String, surfaceContainer: Color, primary: Color, content: @Composable () -> Unit) {
+private fun FormSection(
+    label: String,
+    surfaceContainer: androidx.compose.ui.graphics.Color,
+    primary: androidx.compose.ui.graphics.Color,
+    content: @Composable () -> Unit,
+) {
     Surface(shape = RoundedCornerShape(14.dp), color = surfaceContainer, tonalElevation = 1.dp, modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
             Text(label, style = MaterialTheme.typography.labelSmall, color = primary.copy(alpha = 0.75f), fontWeight = FontWeight.Bold)
             content()
         }
