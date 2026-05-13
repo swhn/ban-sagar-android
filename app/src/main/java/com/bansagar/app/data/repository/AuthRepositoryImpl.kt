@@ -10,6 +10,7 @@ import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.NoCredentialException
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.firebase.messaging.FirebaseMessaging
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.Google
@@ -18,6 +19,9 @@ import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.tasks.await
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import javax.inject.Inject
 
 private const val TAG = "AuthRepository"
@@ -72,7 +76,21 @@ class AuthRepositoryImpl @Inject constructor(
             val userId = client.auth.currentSessionOrNull()?.user?.id
                 ?: return Result.failure(Exception("Sign-in failed: no session after IDToken exchange"))
 
-            Result.success(ensureProfile(userId))
+            val profile = ensureProfile(userId)
+
+            // Upload current FCM token so notifications work immediately after sign-in.
+            // onNewToken fires on install before the user is authenticated, so the token
+            // would otherwise only be stored on the next token rotation.
+            try {
+                val fcmToken = FirebaseMessaging.getInstance().token.await()
+                client.from("users").update(buildJsonObject { put("fcm_token", fcmToken) }) {
+                    filter { eq("id", userId) }
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Could not upload FCM token after sign-in", e)
+            }
+
+            Result.success(profile)
         } catch (e: Exception) {
             Log.e(TAG, "signInWithGoogle failed", e)
             Result.failure(e)
