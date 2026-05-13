@@ -70,6 +70,7 @@ private val Amber400 = Color(0xFFFBBF24)
 @Composable
 fun ProfileScreen(
     authViewModel: AuthViewModel,
+    showRanking: Boolean = true,
     onNavigateToLeaderboard: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
@@ -150,14 +151,16 @@ fun ProfileScreen(
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(R.string.sign_in_google), fontWeight = FontWeight.SemiBold)
                 }
-                OutlinedButton(
-                    onClick = onNavigateToLeaderboard,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Icon(Icons.Outlined.EmojiEvents, null, Modifier.size(18.dp), tint = Amber400)
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.view_leaderboard))
+                if (showRanking) {
+                    OutlinedButton(
+                        onClick = onNavigateToLeaderboard,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Icon(Icons.Outlined.EmojiEvents, null, Modifier.size(18.dp), tint = Amber400)
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.view_leaderboard))
+                    }
                 }
             }
         }
@@ -252,28 +255,30 @@ fun ProfileScreen(
                 )
             }
 
-            Surface(
-                modifier = Modifier.fillMaxWidth().clickable { onNavigateToLeaderboard() },
-                shape = RoundedCornerShape(14.dp),
-                color = surfaceContainer,
-                tonalElevation = 1.dp,
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+            if (showRanking) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth().clickable { onNavigateToLeaderboard() },
+                    shape = RoundedCornerShape(14.dp),
+                    color = surfaceContainer,
+                    tonalElevation = 1.dp,
                 ) {
-                    Box(
-                        modifier = Modifier.size(36.dp).background(Amber400.copy(alpha = 0.15f), RoundedCornerShape(10.dp)),
-                        contentAlignment = Alignment.Center,
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Icon(Icons.Outlined.EmojiEvents, null, Modifier.size(20.dp), tint = Amber400)
+                        Box(
+                            modifier = Modifier.size(36.dp).background(Amber400.copy(alpha = 0.15f), RoundedCornerShape(10.dp)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(Icons.Outlined.EmojiEvents, null, Modifier.size(20.dp), tint = Amber400)
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(stringResource(R.string.leaderboard), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = onSurface)
+                            Text("Rankings & achievements", style = MaterialTheme.typography.labelSmall, color = onSurfaceVariant)
+                        }
+                        Icon(Icons.AutoMirrored.Outlined.NavigateNext, null, tint = onSurfaceVariant)
                     }
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(stringResource(R.string.leaderboard), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = onSurface)
-                        Text("Rankings & achievements", style = MaterialTheme.typography.labelSmall, color = onSurfaceVariant)
-                    }
-                    Icon(Icons.AutoMirrored.Outlined.NavigateNext, null, tint = onSurfaceVariant)
                 }
             }
 

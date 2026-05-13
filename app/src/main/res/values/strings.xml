@@ -99,6 +99,10 @@
     <string name="nsfw_warning_confirm">Enable</string>
     <string name="cancel">Cancel</string>
 
+    <!-- Announcement dialog -->
+    <string name="announcement_title">Announcement</string>
+    <string name="ok">OK</string>
+
     <!-- Generic -->
     <string name="empty_home">No slangs found</string>
     <string name="loading">Loading…</string>

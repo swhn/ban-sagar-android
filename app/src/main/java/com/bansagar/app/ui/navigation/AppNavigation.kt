@@ -7,10 +7,18 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
@@ -20,6 +28,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
+import com.bansagar.app.R
 import com.bansagar.app.ui.auth.AuthViewModel
 import com.bansagar.app.ui.contribute.ContributeScreen
 import com.bansagar.app.ui.detail.SlangDetailScreen
@@ -49,12 +58,32 @@ fun AppNavigation() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    // Activity-scoped: shared down to all screens that need it
     val authViewModel: AuthViewModel = hiltViewModel()
-
-    // Tracks auth session restore + Room warmup; shows loading overlay until done
     val initViewModel: AppInitViewModel = hiltViewModel()
     val isInitializing by initViewModel.isInitializing.collectAsStateWithLifecycle()
+    val siteSettings by initViewModel.siteSettings.collectAsStateWithLifecycle()
+
+    // Show announcement once per session after init completes
+    var announcementDismissed by remember { mutableStateOf(false) }
+    val announcement = siteSettings.siteAnnouncement?.takeIf { it.isNotBlank() }
+
+    if (!isInitializing && announcement != null && !announcementDismissed) {
+        AlertDialog(
+            onDismissRequest = { announcementDismissed = true },
+            title = {
+                Text(
+                    stringResource(R.string.announcement_title),
+                    fontWeight = FontWeight.Bold,
+                )
+            },
+            text = { Text(announcement) },
+            confirmButton = {
+                TextButton(onClick = { announcementDismissed = true }) {
+                    Text(stringResource(R.string.ok))
+                }
+            },
+        )
+    }
 
     val showBottomBar = currentRoute in listOf(
         Routes.HOME, Routes.SEARCH, Routes.CONTRIBUTE, Routes.PROFILE
@@ -101,6 +130,7 @@ fun AppNavigation() {
                 composable(Routes.PROFILE) {
                     ProfileScreen(
                         authViewModel = authViewModel,
+                        showRanking = siteSettings.showRanking,
                         onNavigateToLeaderboard = { navController.navigate(Routes.LEADERBOARD) },
                     )
                 }
@@ -130,11 +160,9 @@ fun AppNavigation() {
             }
         }
 
-        // Branded loading overlay — sits on top of everything while the app initialises.
-        // AnimatedVisibility with fadeOut gives a smooth handoff to the home screen content.
         AnimatedVisibility(
             visible = isInitializing,
-            enter = EnterTransition.None,   // already visible at startup; no enter animation needed
+            enter = EnterTransition.None,
             exit = fadeOut(animationSpec = tween(durationMillis = 450)),
             modifier = Modifier.fillMaxSize(),
         ) {

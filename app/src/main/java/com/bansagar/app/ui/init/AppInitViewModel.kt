@@ -2,9 +2,12 @@ package com.bansagar.app.ui.init
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bansagar.app.data.model.SiteSettings
 import com.bansagar.app.domain.repository.AuthRepository
+import com.bansagar.app.domain.repository.SiteSettingsRepository
 import com.bansagar.app.domain.repository.SlangRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,18 +19,24 @@ import javax.inject.Inject
 class AppInitViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val slangRepository: SlangRepository,
+    private val siteSettingsRepository: SiteSettingsRepository,
 ) : ViewModel() {
 
     private val _isInitializing = MutableStateFlow(true)
     val isInitializing: StateFlow<Boolean> = _isInitializing.asStateFlow()
 
+    private val _siteSettings = MutableStateFlow(SiteSettings())
+    val siteSettings: StateFlow<SiteSettings> = _siteSettings.asStateFlow()
+
     init {
         viewModelScope.launch {
-            // Wait for the auth session to be restored from encrypted storage
-            // (this is the main source of first-launch latency).
-            // Also touch Room so the DB file is opened and WAL is set up.
+            // Fetch site settings in parallel with auth restore and Room warmup
+            val settingsDeferred = async {
+                runCatching { siteSettingsRepository.getSettings() }.getOrDefault(SiteSettings())
+            }
             runCatching { authRepository.currentUserFlow.first() }
             runCatching { slangRepository.getCachedLatest(1) }
+            _siteSettings.value = settingsDeferred.await()
             _isInitializing.value = false
         }
     }
