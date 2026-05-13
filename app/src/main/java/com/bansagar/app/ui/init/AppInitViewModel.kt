@@ -23,6 +23,9 @@ class AppInitViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            // Wait for the auth session to be restored from encrypted storage
+            // (this is the main source of first-launch latency).
+            // Also touch Room so the DB file is opened and WAL is set up.
             runCatching { authRepository.currentUserFlow.first() }
             runCatching { slangRepository.getCachedLatest(1) }
             _isInitializing.value = false

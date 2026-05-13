@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
 
     private val requestNotificationPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { /* user decision recorded by the system */ }
+    ) { /* user decision recorded by the system; notifications enabled if granted */ }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
