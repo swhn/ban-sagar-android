@@ -1,38 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Ban Sagar</string>
+
+    <!-- Bottom nav -->
     <string name="tab_home">Home</string>
     <string name="tab_search">Search</string>
     <string name="tab_contribute">Contribute</string>
     <string name="tab_profile">Profile</string>
-    <string name="search_placeholder">Search word or meaning…</string>
+
+    <!-- Home tabs -->
     <string name="tab_trending">Trending</string>
     <string name="tab_latest">Latest</string>
     <string name="tab_top">Top</string>
     <string name="tab_random">Random</string>
+
+    <!-- Trending timeframe sub-tabs -->
     <string name="tf_day">24h</string>
     <string name="tf_week">Week</string>
     <string name="tf_month">Month</string>
     <string name="tf_year">Year</string>
+
+    <!-- Search -->
+    <string name="search_placeholder">Search word or meaning…</string>
+    <string name="empty_search">No results for "%s"</string>
+
+    <!-- Slang detail -->
     <string name="meaning">Meaning</string>
     <string name="meaning_burmese">Burmese Meaning</string>
     <string name="examples">Examples</string>
     <string name="related_words">Related Words</string>
     <string name="share">Share</string>
-    <string name="sign_in">Sign In</string>
-    <string name="sign_out">Sign Out</string>
+    <string name="upvote">Upvote</string>
+    <string name="downvote">Downvote</string>
     <string name="views">Views</string>
+    <string name="back">Back</string>
+
+    <!-- NSFW gate -->
+    <string name="nsfw_gate_title">Sensitive Content</string>
+    <string name="nsfw_gate_desc">Enable "Show Sensitive Content" in Profile → Settings to view this word.</string>
+
+    <!-- Auth -->
+    <string name="sign_in_title">Sign In</string>
+    <string name="sign_in_subtitle">Sign in with Google to contribute, vote, and track your submissions</string>
+    <string name="sign_in_google">Continue with Google</string>
+    <string name="sign_out">Sign Out</string>
+
+    <!-- Profile -->
+    <string name="settings">Settings</string>
+    <string name="profile_display_name">Display Name</string>
+    <string name="profile_preferences">Preferences</string>
+    <string name="show_sensitive">Show Sensitive Content</string>
+    <string name="show_sensitive_desc">Show NSFW slangs in lists and detail</string>
+    <string name="pref_show_nsfw">Show NSFW content</string>
+    <string name="pref_notify_approved">Notify when contributions are approved</string>
+    <string name="pref_notify_badges">Notify when badges are unlocked</string>
+    <string name="stat_submitted">Submitted</string>
+    <string name="stat_approved">Approved</string>
+    <string name="stat_upvotes">Upvotes</string>
+    <string name="save">Save</string>
+
+    <!-- Leaderboard -->
+    <string name="leaderboard">Leaderboard</string>
+    <string name="leaderboard_rankings">Rankings</string>
+    <string name="leaderboard_achievements">Achievements</string>
+
+    <!-- Contribute -->
+    <string name="contribute_title">Add a Word</string>
+    <string name="contribute_sign_in_prompt">Sign in to add new words to the dictionary and track your contributions</string>
+    <string name="contribute_submitted_title">✅ Submitted!</string>
+    <string name="contribute_submitted_body">Your word has been submitted for review. You can check its status in My Submissions.</string>
+    <string name="contribute_add_another">Add Another Word</string>
+    <string name="field_word">Word *</string>
+    <string name="field_pronunciation">Pronunciation (optional)</string>
+    <string name="field_meaning">English Meaning *</string>
+    <string name="field_meaning_burmese">Burmese Meaning *</string>
+    <string name="field_examples">Examples (optional, up to 5)</string>
+    <string name="field_nsfw">Contains NSFW content</string>
+    <string name="add_example">Add example</string>
+    <string name="submit">Submit</string>
+    <string name="duplicate_warning">Similar words already exist:</string>
+
+    <!-- History -->
+    <string name="my_submissions">My Submissions</string>
+    <string name="empty_history">No submissions yet</string>
+    <string name="filter_all">All</string>
+    <string name="status_pending">Pending</string>
+    <string name="status_approved">Approved</string>
+    <string name="status_rejected">Rejected</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">Notifications</string>
+    <string name="notification_channel_description">Approval updates and badge unlocks</string>
+
+    <!-- Generic -->
     <string name="empty_home">No slangs found</string>
-    <string name="empty_search">No results for "%s"</string>
     <string name="loading">Loading…</string>
     <string name="error_generic">Something went wrong</string>
     <string name="retry">Retry</string>
-    <string name="settings">Settings</string>
-    <string name="show_sensitive">Show Sensitive Content</string>
-    <string name="show_sensitive_desc">Sign in to enable (coming in Phase 2)</string>
-    <string name="profile_sign_in_prompt">Sign in with Google to manage your profile</string>
-    <string name="coming_phase2">Google sign-in coming in Phase 2</string>
-    <string name="nsfw_gate_title">Sensitive Content</string>
-    <string name="nsfw_gate_desc">Enable "Show Sensitive Content" in Profile → Settings to view this word.</string>
-    <string name="nsfw_gate_phase2">Sign-in required — coming in Phase 2</string>
 </resources>
