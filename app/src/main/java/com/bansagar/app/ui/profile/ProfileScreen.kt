@@ -23,7 +23,10 @@ import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.ExitToApp
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Mail
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material.icons.outlined.WarningAmber
@@ -53,6 +56,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -77,6 +82,7 @@ fun ProfileScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val showNsfw by viewModel.showNsfw.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
     val primary = MaterialTheme.colorScheme.primary
     val onSurface = MaterialTheme.colorScheme.onSurface
     val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
@@ -162,6 +168,12 @@ fun ProfileScreen(
                         Text(stringResource(R.string.view_leaderboard))
                     }
                 }
+                LinkSection(
+                    uriHandler = uriHandler,
+                    surfaceContainer = surfaceContainer,
+                    onSurface = onSurface,
+                    onSurfaceVariant = onSurfaceVariant,
+                )
             }
         }
         return
@@ -335,6 +347,13 @@ fun ProfileScreen(
                 }
             }
 
+            LinkSection(
+                uriHandler = uriHandler,
+                surfaceContainer = surfaceContainer,
+                onSurface = onSurface,
+                onSurfaceVariant = onSurfaceVariant,
+            )
+
             OutlinedButton(
                 onClick = authViewModel::signOut,
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
@@ -351,6 +370,54 @@ fun ProfileScreen(
             }
             state.error?.let { err ->
                 Text(err, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelMedium)
+            }
+        }
+    }
+}
+
+@Composable
+private fun LinkSection(
+    uriHandler: UriHandler,
+    surfaceContainer: Color,
+    onSurface: Color,
+    onSurfaceVariant: Color,
+) {
+    val links = listOf(
+        Triple(Icons.Outlined.Info, R.string.link_about, "https://bansagar.com/about"),
+        Triple(Icons.Outlined.Mail, R.string.link_contact, "https://bansagar.com/contact"),
+        Triple(Icons.Outlined.PrivacyTip, R.string.link_privacy, "https://bansagar.com/privacy"),
+    )
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = surfaceContainer,
+        tonalElevation = 1.dp,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 4.dp)) {
+            links.forEachIndexed { index, (icon, labelRes, url) ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { uriHandler.openUri(url) }
+                        .padding(horizontal = 12.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Icon(icon, null, Modifier.size(20.dp), tint = onSurfaceVariant)
+                    Text(
+                        stringResource(labelRes),
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = onSurface,
+                    )
+                    Icon(Icons.AutoMirrored.Outlined.NavigateNext, null, Modifier.size(18.dp), tint = onSurfaceVariant)
+                }
+                if (index < links.lastIndex) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(start = 44.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                    )
+                }
             }
         }
     }

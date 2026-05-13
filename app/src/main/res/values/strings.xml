@@ -37,7 +37,7 @@
 
     <!-- NSFW gate -->
     <string name="nsfw_gate_title">Sensitive Content</string>
-    <string name="nsfw_gate_desc">Enable "Show Sensitive Content" in Profile → Settings to view this word.</string>
+    <string name="nsfw_gate_desc">Enable “Show Sensitive Content” in Profile → Settings to view this word.</string>
 
     <!-- Auth -->
     <string name="sign_in_title">Sign In</string>
@@ -102,6 +102,11 @@
     <!-- Announcement dialog -->
     <string name="announcement_title">Announcement</string>
     <string name="ok">OK</string>
+
+    <!-- Profile links -->
+    <string name="link_about">About</string>
+    <string name="link_contact">Contact Us</string>
+    <string name="link_privacy">Privacy Policy</string>
 
     <!-- Generic -->
     <string name="empty_home">No slangs found</string>
