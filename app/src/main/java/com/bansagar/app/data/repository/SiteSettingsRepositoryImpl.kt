@@ -16,8 +16,9 @@ class SiteSettingsRepositoryImpl @Inject constructor(
 
     override suspend fun getSettings(): SiteSettings {
         return try {
+            // site_settings uses a key-value row schema: each setting is a separate row
             val rows = client.from("site_settings")
-                .select("key,value")
+                .select()
                 .decodeList<KeyValue>()
 
             val map = rows.associate { it.key to it.value }
