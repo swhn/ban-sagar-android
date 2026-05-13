@@ -30,6 +30,8 @@ class SlangRepositoryImpl(
             val today = LocalDate.now(ZoneOffset.UTC)
             val windowDates = (0 until days).map { i -> today.minusDays(i.toLong()).toString() }
             all.map { slang -> slang to trendingScore(slang, windowDates) }
+                // Sort all words by timeframe score DESC, then by total upvotes as tiebreaker.
+                // Words with zero activity in the window still appear — they just rank at the bottom.
                 .sortedWith(
                     compareByDescending<Pair<Slang, Int>> { it.second }
                         .thenByDescending { it.first.upvotes }
