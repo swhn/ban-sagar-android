@@ -12,6 +12,7 @@ interface SlangRepository {
     suspend fun getBySlug(slug: String): Slang?
     suspend fun getRelated(slang: Slang, limit: Int = 6): List<Slang>
     suspend fun incrementView(slangId: String)
+    suspend fun getWordOfTheDay(): Slang?
     // Cache-only reads for instant pre-load
     suspend fun getCachedLatest(limit: Int): List<Slang>
     suspend fun getCachedTop(limit: Int): List<Slang>

@@ -3,6 +3,7 @@ package com.bansagar.app.service
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
+import android.net.Uri
 import androidx.core.app.NotificationCompat
 import com.bansagar.app.MainActivity
 import com.bansagar.app.R
@@ -32,43 +33,58 @@ class BanSagarMessagingService : FirebaseMessagingService() {
         serviceScope.cancel()
     }
 
-    /** Called when FCM assigns a new registration token (install, data-clear, token rotation). */
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         serviceScope.launch {
             try {
                 val userId = client.auth.currentUserOrNull()?.id ?: return@launch
                 userRepository.updateFcmToken(userId, token)
-            } catch (_: Exception) { /* token will sync on next sign-in */ }
+            } catch (_: Exception) { }
         }
     }
 
-    /**
-     * Called when a data/notification message arrives while the app is in the foreground.
-     * Background messages are handled automatically by the system using the notification payload.
-     */
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
         val notification = message.notification ?: return
+        val type = message.data["type"]
+        val channelId = if (type == "word_of_the_day") WOTD_CHANNEL_ID else CHANNEL_ID
+        val slug = message.data["slug"]
         showNotification(
             title = notification.title,
             body = notification.body,
             tag = message.messageId,
+            channelId = channelId,
+            slug = slug,
         )
     }
 
-    private fun showNotification(title: String?, body: String?, tag: String?) {
+    private fun showNotification(
+        title: String?,
+        body: String?,
+        tag: String?,
+        channelId: String = CHANNEL_ID,
+        slug: String? = null,
+    ) {
         if (title == null && body == null) return
 
-        val intent = Intent(this, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        val intent = if (!slug.isNullOrBlank()) {
+            Intent(Intent.ACTION_VIEW, Uri.parse("https://bansagar.com/slang/$slug")).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+        } else {
+            Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
         }
+
         val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent,
+            this,
+            slug?.hashCode() ?: 0,
+            intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
 
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+        val notification = NotificationCompat.Builder(this, channelId)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
             .setContentText(body)
@@ -84,5 +100,6 @@ class BanSagarMessagingService : FirebaseMessagingService() {
 
     companion object {
         const val CHANNEL_ID = "ban_sagar_notifications"
+        const val WOTD_CHANNEL_ID = "word_of_the_day"
     }
 }

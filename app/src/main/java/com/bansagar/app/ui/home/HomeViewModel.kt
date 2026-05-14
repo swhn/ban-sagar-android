@@ -25,6 +25,7 @@ data class HomeUiState(
     val activeTab: SortTab = SortTab.Trending,
     val activeTimeframe: Timeframe = Timeframe.Month,
     val showNsfw: Boolean = false,
+    val wordOfTheDay: Slang? = null,
 )
 
 private const val PAGE_SIZE = 20
@@ -47,6 +48,9 @@ class HomeViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(showNsfw = show)
             }
         }
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(wordOfTheDay = repository.getWordOfTheDay())
+        }
     }
 
     fun selectTab(tab: SortTab) {
@@ -64,14 +68,15 @@ class HomeViewModel @Inject constructor(
     fun refresh() {
         _uiState.value = _uiState.value.copy(isRefreshing = true)
         loadSlangs()
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(wordOfTheDay = repository.getWordOfTheDay())
+        }
     }
 
     fun loadMore() {
         val state = _uiState.value
         if (state.isLoading || state.isLoadingMore || !state.canLoadMore ||
             state.activeTab == SortTab.Random ||
-            // Don't load more until the first network page has landed (offset 0 would re-fetch
-            // the same items already visible and cause duplicate keys in LazyColumn).
             currentOffset == 0
         ) return
         viewModelScope.launch {
@@ -79,8 +84,6 @@ class HomeViewModel @Inject constructor(
             try {
                 val newItems = fetchForTab(state.activeTab, state.activeTimeframe, PAGE_SIZE, currentOffset)
                 currentOffset += newItems.size
-                // Read CURRENT slangs at write-time (not the captured snapshot) to avoid a race
-                // where loadSlangs() replaced the list between our fetch start and now.
                 _uiState.value = _uiState.value.copy(
                     slangs = (_uiState.value.slangs + newItems).distinctBy { it.id },
                     isLoadingMore = false,
@@ -99,7 +102,6 @@ class HomeViewModel @Inject constructor(
         val wasRefreshing = _uiState.value.isRefreshing
 
         viewModelScope.launch {
-            // Step 1: show cached data instantly (only on initial/tab switch, not pull-to-refresh)
             if (!wasRefreshing) {
                 val cached = getCachedForTab(tab, timeframe)
                 if (cached.isNotEmpty()) {
@@ -114,8 +116,6 @@ class HomeViewModel @Inject constructor(
                 }
             }
 
-            // Step 2: fetch fresh from network; currentOffset is set here so loadMore
-            // only becomes eligible after this completes.
             try {
                 val slangs = fetchForTab(tab, timeframe, PAGE_SIZE, 0)
                 currentOffset = slangs.size

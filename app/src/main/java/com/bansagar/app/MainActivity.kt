@@ -1,6 +1,8 @@
 package com.bansagar.app
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -9,8 +11,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.bansagar.app.service.BanSagarMessagingService
 import com.bansagar.app.ui.navigation.AppNavigation
 import com.bansagar.app.ui.theme.BanSagarTheme
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -25,6 +29,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         maybeRequestNotificationPermission()
+        createNotificationChannels()
+        subscribeToFcmTopics()
         setContent {
             BanSagarTheme {
                 AppNavigation()
@@ -38,5 +44,20 @@ class MainActivity : ComponentActivity() {
         ) {
             requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
+    }
+
+    private fun createNotificationChannels() {
+        val nm = getSystemService(NotificationManager::class.java)
+        nm.createNotificationChannel(
+            NotificationChannel(
+                BanSagarMessagingService.WOTD_CHANNEL_ID,
+                getString(R.string.wotd_channel_name),
+                NotificationManager.IMPORTANCE_DEFAULT,
+            ).apply { description = getString(R.string.wotd_channel_desc) }
+        )
+    }
+
+    private fun subscribeToFcmTopics() {
+        FirebaseMessaging.getInstance().subscribeToTopic(BanSagarMessagingService.WOTD_CHANNEL_ID)
     }
 }

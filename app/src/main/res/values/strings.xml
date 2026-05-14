@@ -93,6 +93,11 @@
     <string name="notification_channel_name">Notifications</string>
     <string name="notification_channel_description">Approval updates and badge unlocks</string>
 
+    <!-- Word of the Day -->
+    <string name="wotd_label">WORD OF THE DAY</string>
+    <string name="wotd_channel_name">Word of the Day</string>
+    <string name="wotd_channel_desc">Daily word highlight at 8 PM</string>
+
     <!-- NSFW warning dialog -->
     <string name="nsfw_warning_title">Sensitive Content Warning</string>
     <string name="nsfw_warning_body">You are about to enable sensitive (NSFW) content. This will show adult and explicit slang in lists and detail pages. Are you sure?</string>

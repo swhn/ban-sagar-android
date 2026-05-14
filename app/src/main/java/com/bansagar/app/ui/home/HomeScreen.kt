@@ -30,10 +30,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.NavigateNext
 import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Shuffle
+import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -55,13 +57,19 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bansagar.app.R
+import com.bansagar.app.data.model.Slang
 import com.bansagar.app.domain.model.Timeframe
 import com.bansagar.app.ui.components.SlangCard
 import com.bansagar.app.ui.theme.Indigo500
+
+private val Amber400 = Color(0xFFFBBF24)
+private val Amber500 = Color(0xFFF59E0B)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,7 +81,7 @@ fun HomeScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        // ── Header ────────────────────────────────────────────────────────────────────────
+        // ── Header ───────────────────────────────────────────────────────────────────────
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -92,7 +100,21 @@ fun HomeScreen(
             )
         }
 
-        // ── Sort tab row ───────────────────────────────────────────────────────────────
+        // ── Word of the Day card ──────────────────────────────────────────────────────────
+        AnimatedVisibility(
+            visible = state.wordOfTheDay != null,
+            enter = expandVertically() + fadeIn(tween(300)),
+            exit = shrinkVertically() + fadeOut(tween(200)),
+        ) {
+            state.wordOfTheDay?.let { wotd ->
+                WordOfTheDayCard(
+                    slang = wotd,
+                    onClick = { onSlangClick(wotd.slug.ifEmpty { wotd.id }) },
+                )
+            }
+        }
+
+        // ── Sort tab row ─────────────────────────────────────────────────────────────────
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -121,7 +143,7 @@ fun HomeScreen(
             }
         }
 
-        // ── Timeframe sub-tab row (Trending only) ───────────────────────────────────────────────
+        // ── Timeframe sub-tab row (Trending only) ────────────────────────────────────────
         AnimatedVisibility(
             visible = state.activeTab == SortTab.Trending,
             enter = expandVertically() + fadeIn(tween(180)),
@@ -149,7 +171,7 @@ fun HomeScreen(
             }
         }
 
-        // ── Content ────────────────────────────────────────────────────────────────────────
+        // ── Content ──────────────────────────────────────────────────────────────────────
         when {
             state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
                 CircularProgressIndicator(color = Indigo500)
@@ -217,7 +239,60 @@ fun HomeScreen(
     }
 }
 
-// ── Tab components ──────────────────────────────────────────────────────────────────────────────
+// ── Word of the Day card ─────────────────────────────────────────────────────────────────────────
+
+@Composable
+private fun WordOfTheDayCard(slang: Slang, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 10.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Amber500.copy(alpha = 0.13f))
+            .border(1.dp, Amber500.copy(alpha = 0.28f), RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick)
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .background(Amber500.copy(alpha = 0.20f), CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(Icons.Outlined.WbSunny, null, Modifier.size(22.dp), tint = Amber400)
+        }
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                stringResource(R.string.wotd_label),
+                style = MaterialTheme.typography.labelSmall,
+                color = Amber500,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.6.sp,
+            )
+            Text(
+                slang.word,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                slang.meaning,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        Icon(Icons.AutoMirrored.Outlined.NavigateNext, null, Modifier.size(18.dp), tint = Amber400)
+    }
+}
+
+// ── Tab components ───────────────────────────────────────────────────────────────────────────────
 
 @Composable
 private fun SortTabPill(

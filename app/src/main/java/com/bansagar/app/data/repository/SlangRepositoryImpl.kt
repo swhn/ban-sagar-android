@@ -30,8 +30,6 @@ class SlangRepositoryImpl(
             val today = LocalDate.now(ZoneOffset.UTC)
             val windowDates = (0 until days).map { i -> today.minusDays(i.toLong()).toString() }
             all.map { slang -> slang to trendingScore(slang, windowDates) }
-                // Sort all words by timeframe score DESC, then by total upvotes as tiebreaker.
-                // Words with zero activity in the window still appear — they just rank at the bottom.
                 .sortedWith(
                     compareByDescending<Pair<Slang, Int>> { it.second }
                         .thenByDescending { it.first.upvotes }
@@ -174,6 +172,25 @@ class SlangRepositoryImpl(
                 put("p_slang_id", slangId)
             })
         } catch (_: Exception) { }
+    }
+
+    override suspend fun getWordOfTheDay(): Slang? {
+        return try {
+            // Use cached slangs if available; fall back to network fetch.
+            var slangs = dao.getAll().map { it.toSlang() }.filter { it.status == "approved" }
+            if (slangs.isEmpty()) {
+                slangs = client.from("slangs").select {
+                    filter { eq("status", "approved") }
+                }.decodeList<Slang>().also { fetched ->
+                    dao.insertAll(fetched.map { it.toEntity() })
+                }
+            }
+            if (slangs.isEmpty()) return null
+            // Deterministic pick: sort by id so every device picks the same word.
+            val sorted = slangs.sortedBy { it.id }
+            val epochDay = LocalDate.now(ZoneOffset.UTC).toEpochDay()
+            sorted[(epochDay % sorted.size).toInt()]
+        } catch (_: Exception) { null }
     }
 
     override suspend fun getCachedLatest(limit: Int): List<Slang> =
