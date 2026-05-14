@@ -281,7 +281,7 @@ private fun WordOfTheDayCard(slang: Slang, onClick: () -> Unit) {
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                slang.meaning,
+                slang.meaningBurmese?.takeIf { it.isNotBlank() } ?: slang.meaning,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,

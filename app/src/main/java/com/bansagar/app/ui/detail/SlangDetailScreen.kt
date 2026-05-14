@@ -285,7 +285,7 @@ fun SlangDetailScreen(
                                                 color = primary,
                                             )
                                             Text(
-                                                related.meaning,
+                                                related.meaningBurmese?.takeIf { it.isNotBlank() } ?: related.meaning,
                                                 style = MaterialTheme.typography.labelSmall,
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis,
