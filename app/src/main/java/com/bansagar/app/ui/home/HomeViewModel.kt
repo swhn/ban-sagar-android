@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class SortTab { Trending, Latest, Top, Random }
+enum class SortTab { Random, Trending, Top, Latest }
 
 data class HomeUiState(
     val slangs: List<Slang> = emptyList(),
@@ -22,7 +22,7 @@ data class HomeUiState(
     val isLoadingMore: Boolean = false,
     val canLoadMore: Boolean = true,
     val error: String? = null,
-    val activeTab: SortTab = SortTab.Trending,
+    val activeTab: SortTab = SortTab.Random,
     val activeTimeframe: Timeframe = Timeframe.Month,
     val showNsfw: Boolean = false,
     val wordOfTheDay: Slang? = null,
