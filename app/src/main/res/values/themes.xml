@@ -8,6 +8,7 @@
     <style name="Theme.BanSagar.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">#06060B</item>
         <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="windowSplashScreenIconBackgroundColor">#06060B</item>
         <item name="postSplashScreenTheme">@style/Theme.BanSagar</item>
     </style>
 </resources>
