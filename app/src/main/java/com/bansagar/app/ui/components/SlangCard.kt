@@ -100,12 +100,13 @@ fun SlangCard(
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
-                    if (slang.meaning.isNotBlank()) {
+                    val preview = slang.meaningBurmese?.takeIf { it.isNotBlank() } ?: slang.meaning
+                    if (preview.isNotBlank()) {
                         Text(
-                            text = slang.meaning,
+                            text = preview,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 2,
+                            maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
