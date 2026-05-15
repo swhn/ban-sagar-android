@@ -28,6 +28,7 @@ import androidx.compose.material.icons.outlined.Mail
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PrivacyTip
 import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.Stars
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.AlertDialog
@@ -157,16 +158,21 @@ fun ProfileScreen(
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(R.string.sign_in_google), fontWeight = FontWeight.SemiBold)
                 }
-                if (showRanking) {
-                    OutlinedButton(
-                        onClick = onNavigateToLeaderboard,
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Icon(Icons.Outlined.EmojiEvents, null, Modifier.size(18.dp), tint = Amber400)
-                        Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.view_leaderboard))
-                    }
+                // Always show — when ranking is off, label changes to Achievements
+                OutlinedButton(
+                    onClick = onNavigateToLeaderboard,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Icon(
+                        if (showRanking) Icons.Outlined.EmojiEvents else Icons.Outlined.Stars,
+                        null, Modifier.size(18.dp), tint = Amber400,
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        if (showRanking) stringResource(R.string.view_leaderboard)
+                        else stringResource(R.string.leaderboard_achievements),
+                    )
                 }
                 LinkSection(
                     uriHandler = uriHandler,
@@ -267,30 +273,42 @@ fun ProfileScreen(
                 )
             }
 
-            if (showRanking) {
-                Surface(
-                    modifier = Modifier.fillMaxWidth().clickable { onNavigateToLeaderboard() },
-                    shape = RoundedCornerShape(14.dp),
-                    color = surfaceContainer,
-                    tonalElevation = 1.dp,
+            // Always show — label/subtitle adapts based on showRanking
+            Surface(
+                modifier = Modifier.fillMaxWidth().clickable { onNavigateToLeaderboard() },
+                shape = RoundedCornerShape(14.dp),
+                color = surfaceContainer,
+                tonalElevation = 1.dp,
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    Box(
+                        modifier = Modifier.size(36.dp).background(Amber400.copy(alpha = 0.15f), RoundedCornerShape(10.dp)),
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Box(
-                            modifier = Modifier.size(36.dp).background(Amber400.copy(alpha = 0.15f), RoundedCornerShape(10.dp)),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Icon(Icons.Outlined.EmojiEvents, null, Modifier.size(20.dp), tint = Amber400)
-                        }
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(stringResource(R.string.leaderboard), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = onSurface)
-                            Text("Rankings & achievements", style = MaterialTheme.typography.labelSmall, color = onSurfaceVariant)
-                        }
-                        Icon(Icons.AutoMirrored.Outlined.NavigateNext, null, tint = onSurfaceVariant)
+                        Icon(
+                            if (showRanking) Icons.Outlined.EmojiEvents else Icons.Outlined.Stars,
+                            null, Modifier.size(20.dp), tint = Amber400,
+                        )
                     }
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            if (showRanking) stringResource(R.string.leaderboard)
+                            else stringResource(R.string.leaderboard_achievements),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = onSurface,
+                        )
+                        Text(
+                            if (showRanking) "Rankings & achievements" else "Badges & achievements",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = onSurfaceVariant,
+                        )
+                    }
+                    Icon(Icons.AutoMirrored.Outlined.NavigateNext, null, tint = onSurfaceVariant)
                 }
             }
 

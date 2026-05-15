@@ -143,6 +143,7 @@ fun AppNavigation() {
                 composable(Routes.LEADERBOARD) {
                     LeaderboardScreen(
                         onBack = { navController.popBackStack() },
+                        showRanking = siteSettings.showRanking,
                     )
                 }
                 composable(

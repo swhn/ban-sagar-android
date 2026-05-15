@@ -66,17 +66,25 @@ import com.bansagar.app.domain.model.AchievementTier
 @Composable
 fun LeaderboardScreen(
     onBack: () -> Unit,
+    showRanking: Boolean = true,
     viewModel: LeaderboardViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    var selectedTab by remember { mutableIntStateOf(0) }
+    // When ranking is disabled, skip straight to Achievements tab (index 1 → but with no tab row
+    // only Achievements is shown, so we just track it as 0 internally and gate the Rankings tab).
+    var selectedTab by remember { mutableIntStateOf(if (showRanking) 0 else 1) }
     val primary = MaterialTheme.colorScheme.primary
     val onPrimary = MaterialTheme.colorScheme.onPrimary
     val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
-            title = { Text("Leaderboard", fontWeight = FontWeight.SemiBold) },
+            title = {
+                Text(
+                    if (showRanking) "Leaderboard" else stringResource(R.string.leaderboard_achievements),
+                    fontWeight = FontWeight.SemiBold,
+                )
+            },
             navigationIcon = {
                 IconButton(onClick = onBack) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
@@ -85,22 +93,24 @@ fun LeaderboardScreen(
             colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
         )
 
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            LeaderboardTab(
-                label = "Rankings", icon = Icons.Outlined.EmojiEvents,
-                selected = selectedTab == 0, onClick = { selectedTab = 0 },
-                modifier = Modifier.weight(1f),
-                primary = primary, onPrimary = onPrimary, onSurfaceVariant = onSurfaceVariant,
-            )
-            LeaderboardTab(
-                label = "Achievements", icon = Icons.Outlined.Stars,
-                selected = selectedTab == 1, onClick = { selectedTab = 1 },
-                modifier = Modifier.weight(1f),
-                primary = primary, onPrimary = onPrimary, onSurfaceVariant = onSurfaceVariant,
-            )
+        if (showRanking) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                LeaderboardTab(
+                    label = "Rankings", icon = Icons.Outlined.EmojiEvents,
+                    selected = selectedTab == 0, onClick = { selectedTab = 0 },
+                    modifier = Modifier.weight(1f),
+                    primary = primary, onPrimary = onPrimary, onSurfaceVariant = onSurfaceVariant,
+                )
+                LeaderboardTab(
+                    label = stringResource(R.string.leaderboard_achievements), icon = Icons.Outlined.Stars,
+                    selected = selectedTab == 1, onClick = { selectedTab = 1 },
+                    modifier = Modifier.weight(1f),
+                    primary = primary, onPrimary = onPrimary, onSurfaceVariant = onSurfaceVariant,
+                )
+            }
         }
 
         when {
@@ -113,7 +123,7 @@ fun LeaderboardScreen(
                     Button(onClick = viewModel::load) { Text(stringResource(R.string.retry)) }
                 }
             }
-            selectedTab == 0 -> RankingsTab(
+            selectedTab == 0 && showRanking -> RankingsTab(
                 contributors = state.contributors,
                 currentUserId = state.currentUser?.id,
                 onUserClick = { userId -> viewModel.selectUser(userId); selectedTab = 1 },
