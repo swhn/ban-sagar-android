@@ -25,6 +25,7 @@ data class AddSlangUiState(
     val isNsfw: Boolean = false,
     val duplicates: List<Slang> = emptyList(),
     val isCheckingDuplicates: Boolean = false,
+    val dismissedWarning: Boolean = false,
     val isSubmitting: Boolean = false,
     val submitted: Boolean = false,
     val error: String? = null,
@@ -42,7 +43,7 @@ class AddSlangViewModel @Inject constructor(
     private var dupJob: Job? = null
 
     fun onWordChange(word: String) {
-        _uiState.value = _uiState.value.copy(word = word)
+        _uiState.value = _uiState.value.copy(word = word, dismissedWarning = false)
         dupJob?.cancel()
         if (word.length < 2) {
             _uiState.value = _uiState.value.copy(duplicates = emptyList())
@@ -54,6 +55,10 @@ class AddSlangViewModel @Inject constructor(
             val dups = contributeRepository.checkDuplicates(word)
             _uiState.value = _uiState.value.copy(duplicates = dups, isCheckingDuplicates = false)
         }
+    }
+
+    fun dismissWarning() {
+        _uiState.value = _uiState.value.copy(dismissedWarning = true)
     }
 
     fun onPronunciationChange(v: String) { _uiState.value = _uiState.value.copy(pronunciation = v) }

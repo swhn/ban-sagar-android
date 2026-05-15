@@ -1,6 +1,13 @@
 package com.bansagar.app.ui.contribute
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,15 +23,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.NavigateNext
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.History
-import androidx.compose.material.icons.outlined.WarningAmber
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,22 +47,31 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bansagar.app.R
+import com.bansagar.app.data.model.Slang
 import com.bansagar.app.ui.auth.AuthViewModel
+
+private val Amber400 = Color(0xFFFBBF24)
+private val Amber500 = Color(0xFFF59E0B)
+private val Emerald400 = Color(0xFF34D399)
+private val Rose400 = Color(0xFFFB7185)
 
 @Composable
 fun ContributeScreen(
     authViewModel: AuthViewModel,
     onNavigateToHistory: () -> Unit,
+    onSlangClick: (String) -> Unit = {},
     viewModel: AddSlangViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -192,28 +210,18 @@ fun ContributeScreen(
                 singleLine = true,
                 shape = RoundedCornerShape(10.dp),
             )
-            if (state.duplicates.isNotEmpty()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.errorContainer, RoundedCornerShape(10.dp))
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.Top,
-                ) {
-                    Icon(Icons.Outlined.WarningAmber, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onErrorContainer)
-                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text(
-                            stringResource(R.string.duplicate_warning),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                        state.duplicates.forEach { dup ->
-                            Text("• ${dup.word} (${dup.status})", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onErrorContainer)
-                        }
-                    }
-                }
+
+            // "Did you mean?" warning
+            AnimatedVisibility(
+                visible = state.duplicates.isNotEmpty() && !state.dismissedWarning,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut(),
+            ) {
+                DuplicateWarning(
+                    duplicates = state.duplicates,
+                    onSlangClick = onSlangClick,
+                    onDismiss = viewModel::dismissWarning,
+                )
             }
         }
 
@@ -300,6 +308,97 @@ fun ContributeScreen(
 
         Spacer(Modifier.padding(bottom = 8.dp))
     }
+}
+
+@Composable
+private fun DuplicateWarning(
+    duplicates: List<Slang>,
+    onSlangClick: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(Amber500.copy(alpha = 0.10f))
+            .border(1.dp, Amber500.copy(alpha = 0.25f), RoundedCornerShape(10.dp))
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Icon(Icons.Outlined.Search, null, Modifier.size(16.dp), tint = Amber400)
+            Text(
+                stringResource(R.string.duplicate_warning),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = Amber400,
+            )
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            duplicates.forEach { dup ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
+                        .clickable { onSlangClick(dup.slug.ifEmpty { dup.id }) }
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        dup.word,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    StatusBadge(dup.status)
+                    Text(
+                        dup.meaningBurmese?.takeIf { it.isNotBlank() } ?: dup.meaning,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Icon(Icons.AutoMirrored.Outlined.NavigateNext, null, Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+
+        TextButton(
+            onClick = onDismiss,
+            modifier = Modifier.align(Alignment.End),
+        ) {
+            Text(
+                stringResource(R.string.not_duplicate),
+                style = MaterialTheme.typography.labelSmall,
+                color = Amber400.copy(alpha = 0.7f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun StatusBadge(status: String) {
+    val (bg, fg) = when (status) {
+        "approved" -> Emerald400.copy(alpha = 0.15f) to Emerald400
+        "pending"  -> Amber400.copy(alpha = 0.15f) to Amber400
+        else       -> Rose400.copy(alpha = 0.15f) to Rose400
+    }
+    Text(
+        status.uppercase(),
+        modifier = Modifier
+            .background(bg, RoundedCornerShape(4.dp))
+            .padding(horizontal = 5.dp, vertical = 2.dp),
+        style = MaterialTheme.typography.labelSmall,
+        fontWeight = FontWeight.Bold,
+        color = fg,
+    )
 }
 
 @Composable

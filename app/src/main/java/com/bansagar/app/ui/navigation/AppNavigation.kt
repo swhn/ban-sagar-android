@@ -125,6 +125,7 @@ fun AppNavigation() {
                     ContributeScreen(
                         authViewModel = authViewModel,
                         onNavigateToHistory = { navController.navigate(Routes.HISTORY) },
+                        onSlangClick = { slug -> navController.navigate(Routes.slangDetail(slug)) },
                     )
                 }
                 composable(Routes.PROFILE) {
