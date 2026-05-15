@@ -75,20 +75,32 @@ class HomeViewModel @Inject constructor(
 
     fun loadMore() {
         val state = _uiState.value
-        if (state.isLoading || state.isLoadingMore || !state.canLoadMore ||
-            state.activeTab == SortTab.Random ||
-            currentOffset == 0
-        ) return
+        if (state.isLoading || state.isLoadingMore || !state.canLoadMore) return
+        // For paged tabs, don't trigger before the first page is loaded
+        if (state.activeTab != SortTab.Random && currentOffset == 0) return
+
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoadingMore = true)
             try {
-                val newItems = fetchForTab(state.activeTab, state.activeTimeframe, PAGE_SIZE, currentOffset)
-                currentOffset += newItems.size
-                _uiState.value = _uiState.value.copy(
-                    slangs = (_uiState.value.slangs + newItems).distinctBy { it.id },
-                    isLoadingMore = false,
-                    canLoadMore = newItems.size == PAGE_SIZE,
-                )
+                if (state.activeTab == SortTab.Random) {
+                    val newItems = repository.getRandom(PAGE_SIZE)
+                    val existing = _uiState.value.slangs
+                    val combined = (existing + newItems).distinctBy { it.id }
+                    _uiState.value = _uiState.value.copy(
+                        slangs = combined,
+                        isLoadingMore = false,
+                        // Always allow more random; only stop if DB returned nothing at all
+                        canLoadMore = newItems.isNotEmpty(),
+                    )
+                } else {
+                    val newItems = fetchForTab(state.activeTab, state.activeTimeframe, PAGE_SIZE, currentOffset)
+                    currentOffset += newItems.size
+                    _uiState.value = _uiState.value.copy(
+                        slangs = (_uiState.value.slangs + newItems).distinctBy { it.id },
+                        isLoadingMore = false,
+                        canLoadMore = newItems.size == PAGE_SIZE,
+                    )
+                }
             } catch (_: Exception) {
                 _uiState.value = _uiState.value.copy(isLoadingMore = false)
             }
@@ -109,7 +121,7 @@ class HomeViewModel @Inject constructor(
                         slangs = cached.distinctBy { it.id },
                         isLoading = false,
                         error = null,
-                        canLoadMore = cached.size == PAGE_SIZE && tab != SortTab.Random,
+                        canLoadMore = tab == SortTab.Random || cached.size == PAGE_SIZE,
                     )
                 } else {
                     _uiState.value = _uiState.value.copy(isLoading = true, error = null, canLoadMore = true)
@@ -118,12 +130,12 @@ class HomeViewModel @Inject constructor(
 
             try {
                 val slangs = fetchForTab(tab, timeframe, PAGE_SIZE, 0)
-                currentOffset = slangs.size
+                currentOffset = if (tab == SortTab.Random) 0 else slangs.size
                 _uiState.value = _uiState.value.copy(
                     slangs = slangs.distinctBy { it.id },
                     isLoading = false,
                     isRefreshing = false,
-                    canLoadMore = slangs.size == PAGE_SIZE && tab != SortTab.Random,
+                    canLoadMore = tab == SortTab.Random || slangs.size == PAGE_SIZE,
                     error = null,
                 )
             } catch (e: Exception) {
