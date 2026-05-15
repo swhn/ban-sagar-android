@@ -73,7 +73,7 @@
     <string name="contribute_add_another">Add Another Word</string>
     <string name="field_word">Word *</string>
     <string name="field_pronunciation">Pronunciation *</string>
-    <string name="field_meaning">English Meaning *</string>
+    <string name="field_meaning">English Meaning</string>
     <string name="field_meaning_burmese">Burmese Meaning *</string>
     <string name="field_examples">Examples (optional, up to 5)</string>
     <string name="field_nsfw">Contains NSFW content</string>

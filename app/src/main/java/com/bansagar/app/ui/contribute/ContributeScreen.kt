@@ -211,7 +211,6 @@ fun ContributeScreen(
                 shape = RoundedCornerShape(10.dp),
             )
 
-            // "Did you mean?" warning
             AnimatedVisibility(
                 visible = state.duplicates.isNotEmpty() && !state.dismissedWarning,
                 enter = expandVertically() + fadeIn(),
@@ -293,7 +292,6 @@ fun ContributeScreen(
             enabled = !state.isSubmitting
                 && state.word.isNotBlank()
                 && state.pronunciation.isNotBlank()
-                && state.meaning.isNotBlank()
                 && state.meaningBurmese.isNotBlank(),
             modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
             colors = ButtonDefaults.buttonColors(containerColor = primary),
