@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 val Indigo400 = Color(0xFF818CF8)
 val Indigo500 = Color(0xFF6366F1)
 val Indigo600 = Color(0xFF4F46E5)
+val Purple300 = Color(0xFFD8B4FE)
 val Purple400 = Color(0xFFC084FC)
 val Purple500 = Color(0xFFA855F7)
 val Purple600 = Color(0xFF9333EA)

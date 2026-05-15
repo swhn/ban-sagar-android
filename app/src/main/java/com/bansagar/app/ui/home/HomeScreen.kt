@@ -8,6 +8,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,6 +27,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -48,6 +51,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,17 +71,38 @@ import com.bansagar.app.data.model.Slang
 import com.bansagar.app.domain.model.Timeframe
 import com.bansagar.app.ui.components.SlangCard
 import com.bansagar.app.ui.theme.Indigo500
+import kotlinx.coroutines.launch
 
 private val Amber400 = Color(0xFFFBBF24)
 private val Amber500 = Color(0xFFF59E0B)
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     onSlangClick: (String) -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val tabs = SortTab.entries
+    val pagerState = rememberPagerState(
+        initialPage = tabs.indexOf(state.activeTab).coerceAtLeast(0),
+        pageCount = { tabs.size },
+    )
+    val scope = rememberCoroutineScope()
+
+    // User swiped to a new page → update ViewModel
+    LaunchedEffect(pagerState.settledPage) {
+        val newTab = tabs[pagerState.settledPage]
+        if (newTab != state.activeTab) viewModel.selectTab(newTab)
+    }
+
+    // Tab pill tapped (ViewModel changed) → scroll pager to match
+    LaunchedEffect(state.activeTab) {
+        val idx = tabs.indexOf(state.activeTab)
+        if (idx >= 0 && pagerState.currentPage != idx && !pagerState.isScrollInProgress) {
+            pagerState.animateScrollToPage(idx)
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
 
@@ -123,7 +148,7 @@ fun HomeScreen(
                 .padding(bottom = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            SortTab.entries.forEach { tab ->
+            tabs.forEach { tab ->
                 SortTabPill(
                     label = when (tab) {
                         SortTab.Trending -> stringResource(R.string.tab_trending)
@@ -137,15 +162,15 @@ fun HomeScreen(
                         SortTab.Top      -> Icons.Outlined.EmojiEvents
                         SortTab.Random   -> Icons.Outlined.Shuffle
                     },
-                    selected = tab == state.activeTab,
-                    onClick = { viewModel.selectTab(tab) },
+                    selected = tab == tabs[pagerState.currentPage],
+                    onClick = { scope.launch { pagerState.animateScrollToPage(tabs.indexOf(tab)) } },
                 )
             }
         }
 
         // ── Timeframe sub-tab row (Trending only) ────────────────────────────────────────
         AnimatedVisibility(
-            visible = state.activeTab == SortTab.Trending,
+            visible = tabs.getOrElse(pagerState.currentPage) { state.activeTab } == SortTab.Trending,
             enter = expandVertically() + fadeIn(tween(180)),
             exit = shrinkVertically() + fadeOut(tween(180)),
         ) {
@@ -171,65 +196,93 @@ fun HomeScreen(
             }
         }
 
-        // ── Content ──────────────────────────────────────────────────────────────────────
-        when {
-            state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
-                CircularProgressIndicator(color = Indigo500)
+        // ── Swipeable content pager ───────────────────────────────────────────────────────
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize(),
+            beyondViewportPageCount = 0,
+        ) { page ->
+            if (tabs[page] == state.activeTab) {
+                TabContent(
+                    state = state,
+                    onSlangClick = onSlangClick,
+                    onRetry = { viewModel.refresh() },
+                    onLoadMore = { viewModel.loadMore() },
+                )
+            } else {
+                Box(Modifier.fillMaxSize())
             }
-            state.error != null -> Box(Modifier.fillMaxSize(), Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = state.error ?: stringResource(R.string.error_generic),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error,
-                        textAlign = TextAlign.Center,
-                    )
-                    TextButton(onClick = { viewModel.refresh() }) {
-                        Text(stringResource(R.string.retry))
-                    }
-                }
-            }
-            else -> {
-                val listState = rememberLazyListState()
-                val nearBottom by remember {
-                    derivedStateOf {
-                        val last = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-                        val total = listState.layoutInfo.totalItemsCount
-                        total > 0 && last >= total - 4
-                    }
-                }
-                LaunchedEffect(nearBottom) { if (nearBottom) viewModel.loadMore() }
+        }
+    }
+}
 
-                PullToRefreshBox(
-                    isRefreshing = state.isRefreshing,
-                    onRefresh = { viewModel.refresh() },
-                    modifier = Modifier.fillMaxSize(),
+// ── Tab content ──────────────────────────────────────────────────────────────────────────────────
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TabContent(
+    state: HomeUiState,
+    onSlangClick: (String) -> Unit,
+    onRetry: () -> Unit,
+    onLoadMore: () -> Unit,
+) {
+    when {
+        state.isLoading -> Box(Modifier.fillMaxSize(), Alignment.Center) {
+            CircularProgressIndicator(color = Indigo500)
+        }
+        state.error != null -> Box(Modifier.fillMaxSize(), Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = state.error ?: stringResource(R.string.error_generic),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center,
+                )
+                TextButton(onClick = onRetry) {
+                    Text(stringResource(R.string.retry))
+                }
+            }
+        }
+        else -> {
+            val listState = rememberLazyListState()
+            val nearBottom by remember {
+                derivedStateOf {
+                    val last = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+                    val total = listState.layoutInfo.totalItemsCount
+                    total > 0 && last >= total - 4
+                }
+            }
+            LaunchedEffect(nearBottom) { if (nearBottom) onLoadMore() }
+
+            PullToRefreshBox(
+                isRefreshing = state.isRefreshing,
+                onRefresh = onRetry,
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                LazyColumn(
+                    state = listState,
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    LazyColumn(
-                        state = listState,
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                    ) {
-                        items(items = state.slangs, key = { it.id }) { slang ->
-                            SlangCard(
-                                slang = slang,
-                                showNsfw = state.showNsfw,
-                                onClick = { onSlangClick(slang.slug.ifEmpty { slang.id }) },
-                            )
-                        }
-                        if (state.isLoadingMore) {
-                            item {
-                                Box(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    Alignment.Center,
-                                ) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(24.dp),
-                                        color = Indigo500,
-                                    )
-                                }
+                    items(items = state.slangs, key = { it.id }) { slang ->
+                        SlangCard(
+                            slang = slang,
+                            showNsfw = state.showNsfw,
+                            onClick = { onSlangClick(slang.slug.ifEmpty { slang.id }) },
+                        )
+                    }
+                    if (state.isLoadingMore) {
+                        item {
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                Alignment.Center,
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    color = Indigo500,
+                                )
                             }
                         }
                     }
