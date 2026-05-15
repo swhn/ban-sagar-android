@@ -37,7 +37,7 @@
 
     <!-- NSFW gate -->
     <string name="nsfw_gate_title">Sensitive Content</string>
-    <string name="nsfw_gate_desc">Enable “Show Sensitive Content” in Profile → Settings to view this word.</string>
+    <string name="nsfw_gate_desc">Enable "Show Sensitive Content" in Profile → Settings to view this word.</string>
 
     <!-- Auth -->
     <string name="sign_in_title">Sign In</string>
@@ -79,7 +79,8 @@
     <string name="field_nsfw">Contains NSFW content</string>
     <string name="add_example">Add example</string>
     <string name="submit">Submit</string>
-    <string name="duplicate_warning">Similar words already exist:</string>
+    <string name="duplicate_warning">Did you mean?</string>
+    <string name="not_duplicate">Not a duplicate? Continue anyway</string>
 
     <!-- History -->
     <string name="my_submissions">My Submissions</string>
