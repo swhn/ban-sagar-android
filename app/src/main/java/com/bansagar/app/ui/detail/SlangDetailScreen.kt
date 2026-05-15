@@ -142,6 +142,12 @@ fun SlangDetailScreen(
                 }
             }
             slang != null -> {
+                val visibleRelated = if (state.showNsfw) {
+                    state.relatedWords
+                } else {
+                    state.relatedWords.filter { !it.isNsfw }
+                }
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -257,7 +263,7 @@ fun SlangDetailScreen(
                             }
                         }
                     }
-                    if (state.relatedWords.isNotEmpty()) {
+                    if (visibleRelated.isNotEmpty()) {
                         Column {
                             Text(
                                 text = stringResource(R.string.related_words),
@@ -270,7 +276,7 @@ fun SlangDetailScreen(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
-                                state.relatedWords.forEach { related ->
+                                visibleRelated.forEach { related ->
                                     Surface(
                                         onClick = { onSlangClick(related.slug.ifEmpty { related.id }) },
                                         shape = RoundedCornerShape(10.dp),
