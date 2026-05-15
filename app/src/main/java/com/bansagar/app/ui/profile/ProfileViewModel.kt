@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bansagar.app.data.model.AppUser
 import com.bansagar.app.data.model.UserStats
+import com.bansagar.app.data.preferences.ThemeMode
 import com.bansagar.app.data.preferences.UserPreferencesRepository
 import com.bansagar.app.domain.repository.AuthRepository
 import com.bansagar.app.domain.repository.UserRepository
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -37,9 +39,13 @@ class ProfileViewModel @Inject constructor(
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
     val showNsfw: StateFlow<Boolean> = prefs.showNsfw.stateIn(
-        viewModelScope,
-        SharingStarted.Eagerly,
-        false,
+        viewModelScope, SharingStarted.Eagerly, false,
+    )
+    val themeMode: StateFlow<ThemeMode> = prefs.themeMode.stateIn(
+        viewModelScope, SharingStarted.Eagerly, ThemeMode.SYSTEM,
+    )
+    val wotdNotifications: StateFlow<Boolean> = prefs.wotdNotifications.stateIn(
+        viewModelScope, SharingStarted.Eagerly, true,
     )
 
     init {
@@ -52,7 +58,6 @@ class ProfileViewModel @Inject constructor(
                 )
                 if (user != null) {
                     loadStats(user.id)
-                    // Sync server-side preference to local DataStore on sign-in
                     prefs.setShowNsfw(user.showNsfw)
                 }
             }
@@ -89,10 +94,23 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    fun setThemeMode(mode: ThemeMode) {
+        viewModelScope.launch { prefs.setThemeMode(mode) }
+    }
+
+    fun setWotdNotifications(enabled: Boolean) {
+        viewModelScope.launch { prefs.setWotdNotifications(enabled) }
+        val topic = WOTD_TOPIC
+        if (enabled) {
+            FirebaseMessaging.getInstance().subscribeToTopic(topic)
+        } else {
+            FirebaseMessaging.getInstance().unsubscribeFromTopic(topic)
+        }
+    }
+
     fun setShowNsfw(value: Boolean) {
         viewModelScope.launch {
             prefs.setShowNsfw(value)
-            // Persist to user profile too if signed in
             val user = _uiState.value.user ?: return@launch
             try {
                 userRepository.updatePreferences(
@@ -127,5 +145,9 @@ class ProfileViewModel @Inject constructor(
 
     fun dismissMessage() {
         _uiState.value = _uiState.value.copy(successMessage = null, error = null)
+    }
+
+    private companion object {
+        const val WOTD_TOPIC = "word_of_the_day"
     }
 }

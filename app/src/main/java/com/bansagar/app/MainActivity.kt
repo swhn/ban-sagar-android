@@ -11,18 +11,27 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import com.bansagar.app.data.preferences.ThemeMode
+import com.bansagar.app.data.preferences.UserPreferencesRepository
 import com.bansagar.app.service.BanSagarMessagingService
 import com.bansagar.app.ui.navigation.AppNavigation
 import com.bansagar.app.ui.theme.BanSagarTheme
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    @Inject lateinit var prefs: UserPreferencesRepository
+
     private val requestNotificationPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { /* user decision recorded by the system; notifications enabled if granted */ }
+    ) { }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -30,9 +39,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         maybeRequestNotificationPermission()
         createNotificationChannels()
-        subscribeToFcmTopics()
+        syncWotdSubscription()
         setContent {
-            BanSagarTheme {
+            val themeMode by prefs.themeMode.collectAsStateWithLifecycle(initialValue = ThemeMode.SYSTEM)
+            BanSagarTheme(themeMode = themeMode) {
                 AppNavigation()
             }
         }
@@ -57,7 +67,15 @@ class MainActivity : ComponentActivity() {
         )
     }
 
-    private fun subscribeToFcmTopics() {
-        FirebaseMessaging.getInstance().subscribeToTopic(BanSagarMessagingService.WOTD_CHANNEL_ID)
+    private fun syncWotdSubscription() {
+        lifecycleScope.launch {
+            val enabled = prefs.wotdNotifications.first()
+            val topic = BanSagarMessagingService.WOTD_CHANNEL_ID
+            if (enabled) {
+                FirebaseMessaging.getInstance().subscribeToTopic(topic)
+            } else {
+                FirebaseMessaging.getInstance().unsubscribeFromTopic(topic)
+            }
+        }
     }
 }

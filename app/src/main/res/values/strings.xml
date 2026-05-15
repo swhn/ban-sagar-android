@@ -59,6 +59,19 @@
     <string name="stat_upvotes">Upvotes</string>
     <string name="save">Save</string>
 
+    <!-- Settings sections -->
+    <string name="pref_section_appearance">APPEARANCE</string>
+    <string name="pref_section_notifications">NOTIFICATIONS</string>
+    <string name="pref_section_content">CONTENT</string>
+
+    <!-- Theme -->
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+
+    <!-- Notification preferences -->
+    <string name="pref_wotd_notifications">Word of the Day</string>
+
     <!-- Leaderboard -->
     <string name="leaderboard">Leaderboard</string>
     <string name="leaderboard_rankings">Rankings</string>
