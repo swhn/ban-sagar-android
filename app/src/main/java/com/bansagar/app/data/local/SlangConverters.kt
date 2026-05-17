@@ -1,4 +1,4 @@
-package com.bansagar.app.data.local
+package com.madebysai.bansagar.data.local
 
 import androidx.room.TypeConverter
 import kotlinx.serialization.encodeToString

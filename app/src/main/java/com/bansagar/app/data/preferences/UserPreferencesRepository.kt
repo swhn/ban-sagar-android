@@ -1,4 +1,4 @@
-package com.bansagar.app.data.preferences
+package com.madebysai.bansagar.data.preferences
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences

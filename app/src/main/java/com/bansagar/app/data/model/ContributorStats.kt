@@ -1,4 +1,4 @@
-package com.bansagar.app.data.model
+package com.madebysai.bansagar.data.model
 
 data class ContributorStats(
     val authorId: String,

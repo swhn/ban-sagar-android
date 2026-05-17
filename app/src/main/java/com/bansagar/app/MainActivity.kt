@@ -1,4 +1,4 @@
-package com.bansagar.app
+package com.madebysai.bansagar
 
 import android.Manifest
 import android.app.NotificationChannel
@@ -14,11 +14,11 @@ import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import com.bansagar.app.data.preferences.ThemeMode
-import com.bansagar.app.data.preferences.UserPreferencesRepository
-import com.bansagar.app.service.BanSagarMessagingService
-import com.bansagar.app.ui.navigation.AppNavigation
-import com.bansagar.app.ui.theme.BanSagarTheme
+import com.madebysai.bansagar.data.preferences.ThemeMode
+import com.madebysai.bansagar.data.preferences.UserPreferencesRepository
+import com.madebysai.bansagar.service.BanSagarMessagingService
+import com.madebysai.bansagar.ui.navigation.AppNavigation
+import com.madebysai.bansagar.ui.theme.BanSagarTheme
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.appupdate.AppUpdateOptions

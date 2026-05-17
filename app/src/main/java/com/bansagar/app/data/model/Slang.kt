@@ -1,4 +1,4 @@
-package com.bansagar.app.data.model
+package com.madebysai.bansagar.data.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

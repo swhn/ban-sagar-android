@@ -1,13 +1,13 @@
-package com.bansagar.app.service
+package com.madebysai.bansagar.service
 
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.net.Uri
 import androidx.core.app.NotificationCompat
-import com.bansagar.app.MainActivity
-import com.bansagar.app.R
-import com.bansagar.app.domain.repository.UserRepository
+import com.madebysai.bansagar.MainActivity
+import com.madebysai.bansagar.R
+import com.madebysai.bansagar.domain.repository.UserRepository
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint

@@ -1,9 +1,9 @@
-package com.bansagar.app.data.local
+package com.madebysai.bansagar.data.local
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.bansagar.app.data.model.Slang
+import com.madebysai.bansagar.data.model.Slang
 
 @Entity(tableName = "slangs")
 data class SlangEntity(

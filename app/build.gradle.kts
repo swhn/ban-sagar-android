@@ -17,11 +17,11 @@ if (localPropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.bansagar.app"
+    namespace = "com.madebysai.bansagar"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.bansagar.app"
+        applicationId = "com.madebysai.bansagar"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

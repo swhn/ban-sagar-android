@@ -1,9 +1,9 @@
-package com.bansagar.app
+package com.madebysai.bansagar
 
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import com.bansagar.app.service.BanSagarMessagingService
+import com.madebysai.bansagar.service.BanSagarMessagingService
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp

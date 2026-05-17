@@ -1,4 +1,4 @@
-package com.bansagar.app.data.local
+package com.madebysai.bansagar.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
