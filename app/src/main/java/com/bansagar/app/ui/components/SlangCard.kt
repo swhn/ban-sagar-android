@@ -1,4 +1,4 @@
-package com.bansagar.app.ui.components
+package com.madebysai.bansagar.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -29,7 +29,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.bansagar.app.data.model.Slang
+import com.madebysai.bansagar.data.model.Slang
 
 @Composable
 fun SlangCard(

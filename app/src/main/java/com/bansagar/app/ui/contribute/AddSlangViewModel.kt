@@ -1,11 +1,11 @@
-package com.bansagar.app.ui.contribute
+package com.madebysai.bansagar.ui.contribute
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bansagar.app.data.model.Slang
-import com.bansagar.app.data.model.SlangSubmission
-import com.bansagar.app.domain.repository.AuthRepository
-import com.bansagar.app.domain.repository.ContributeRepository
+import com.madebysai.bansagar.data.model.Slang
+import com.madebysai.bansagar.data.model.SlangSubmission
+import com.madebysai.bansagar.domain.repository.AuthRepository
+import com.madebysai.bansagar.domain.repository.ContributeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

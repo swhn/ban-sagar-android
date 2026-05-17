@@ -1,4 +1,4 @@
-package com.bansagar.app.ui.theme
+package com.madebysai.bansagar.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -10,7 +10,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import com.bansagar.app.data.preferences.ThemeMode
+import com.madebysai.bansagar.data.preferences.ThemeMode
 
 private val DarkColorScheme = darkColorScheme(
     primary = Indigo400,

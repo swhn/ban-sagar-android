@@ -1,11 +1,11 @@
-package com.bansagar.app.ui.leaderboard
+package com.madebysai.bansagar.ui.leaderboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bansagar.app.data.model.AppUser
-import com.bansagar.app.data.model.ContributorStats
-import com.bansagar.app.domain.repository.AuthRepository
-import com.bansagar.app.domain.repository.LeaderboardRepository
+import com.madebysai.bansagar.data.model.AppUser
+import com.madebysai.bansagar.data.model.ContributorStats
+import com.madebysai.bansagar.domain.repository.AuthRepository
+import com.madebysai.bansagar.domain.repository.LeaderboardRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

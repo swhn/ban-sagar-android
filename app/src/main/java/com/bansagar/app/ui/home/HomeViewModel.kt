@@ -1,11 +1,11 @@
-package com.bansagar.app.ui.home
+package com.madebysai.bansagar.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bansagar.app.data.model.Slang
-import com.bansagar.app.data.preferences.UserPreferencesRepository
-import com.bansagar.app.domain.model.Timeframe
-import com.bansagar.app.domain.repository.SlangRepository
+import com.madebysai.bansagar.data.model.Slang
+import com.madebysai.bansagar.data.preferences.UserPreferencesRepository
+import com.madebysai.bansagar.domain.model.Timeframe
+import com.madebysai.bansagar.domain.repository.SlangRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -76,7 +76,6 @@ class HomeViewModel @Inject constructor(
     fun loadMore() {
         val state = _uiState.value
         if (state.isLoading || state.isLoadingMore || !state.canLoadMore) return
-        // For paged tabs, don't trigger before the first page is loaded
         if (state.activeTab != SortTab.Random && currentOffset == 0) return
 
         viewModelScope.launch {
@@ -89,7 +88,6 @@ class HomeViewModel @Inject constructor(
                     _uiState.value = _uiState.value.copy(
                         slangs = combined,
                         isLoadingMore = false,
-                        // Always allow more random; only stop if DB returned nothing at all
                         canLoadMore = newItems.isNotEmpty(),
                     )
                 } else {

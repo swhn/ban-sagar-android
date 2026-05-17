@@ -1,13 +1,13 @@
-package com.bansagar.app.ui.profile
+package com.madebysai.bansagar.ui.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bansagar.app.data.model.AppUser
-import com.bansagar.app.data.model.UserStats
-import com.bansagar.app.data.preferences.ThemeMode
-import com.bansagar.app.data.preferences.UserPreferencesRepository
-import com.bansagar.app.domain.repository.AuthRepository
-import com.bansagar.app.domain.repository.UserRepository
+import com.madebysai.bansagar.data.model.AppUser
+import com.madebysai.bansagar.data.model.UserStats
+import com.madebysai.bansagar.data.preferences.ThemeMode
+import com.madebysai.bansagar.data.preferences.UserPreferencesRepository
+import com.madebysai.bansagar.domain.repository.AuthRepository
+import com.madebysai.bansagar.domain.repository.UserRepository
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -1,10 +1,10 @@
-package com.bansagar.app.ui.auth
+package com.madebysai.bansagar.ui.auth
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bansagar.app.data.model.AppUser
-import com.bansagar.app.domain.repository.AuthRepository
+import com.madebysai.bansagar.data.model.AppUser
+import com.madebysai.bansagar.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

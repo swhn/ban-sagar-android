@@ -1,4 +1,4 @@
-package com.bansagar.app.ui.navigation
+package com.madebysai.bansagar.ui.navigation
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
@@ -28,17 +28,17 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
-import com.bansagar.app.R
-import com.bansagar.app.ui.auth.AuthViewModel
-import com.bansagar.app.ui.contribute.ContributeScreen
-import com.bansagar.app.ui.detail.SlangDetailScreen
-import com.bansagar.app.ui.history.HistoryScreen
-import com.bansagar.app.ui.home.HomeScreen
-import com.bansagar.app.ui.init.AppInitViewModel
-import com.bansagar.app.ui.leaderboard.LeaderboardScreen
-import com.bansagar.app.ui.profile.ProfileScreen
-import com.bansagar.app.ui.search.SearchScreen
-import com.bansagar.app.ui.splash.SplashLoadingScreen
+import com.madebysai.bansagar.R
+import com.madebysai.bansagar.ui.auth.AuthViewModel
+import com.madebysai.bansagar.ui.contribute.ContributeScreen
+import com.madebysai.bansagar.ui.detail.SlangDetailScreen
+import com.madebysai.bansagar.ui.history.HistoryScreen
+import com.madebysai.bansagar.ui.home.HomeScreen
+import com.madebysai.bansagar.ui.init.AppInitViewModel
+import com.madebysai.bansagar.ui.leaderboard.LeaderboardScreen
+import com.madebysai.bansagar.ui.profile.ProfileScreen
+import com.madebysai.bansagar.ui.search.SearchScreen
+import com.madebysai.bansagar.ui.splash.SplashLoadingScreen
 
 object Routes {
     const val HOME = "home"
@@ -63,7 +63,6 @@ fun AppNavigation() {
     val isInitializing by initViewModel.isInitializing.collectAsStateWithLifecycle()
     val siteSettings by initViewModel.siteSettings.collectAsStateWithLifecycle()
 
-    // Show announcement once per session after init completes
     var announcementDismissed by remember { mutableStateOf(false) }
     val announcement = siteSettings.siteAnnouncement?.takeIf { it.isNotBlank() }
 

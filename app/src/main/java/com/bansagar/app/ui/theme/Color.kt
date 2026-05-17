@@ -1,4 +1,4 @@
-package com.bansagar.app.ui.theme
+package com.madebysai.bansagar.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

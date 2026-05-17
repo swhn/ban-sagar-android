@@ -1,11 +1,11 @@
-package com.bansagar.app.ui.init
+package com.madebysai.bansagar.ui.init
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bansagar.app.data.model.SiteSettings
-import com.bansagar.app.domain.repository.AuthRepository
-import com.bansagar.app.domain.repository.SiteSettingsRepository
-import com.bansagar.app.domain.repository.SlangRepository
+import com.madebysai.bansagar.data.model.SiteSettings
+import com.madebysai.bansagar.domain.repository.AuthRepository
+import com.madebysai.bansagar.domain.repository.SiteSettingsRepository
+import com.madebysai.bansagar.domain.repository.SlangRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +30,6 @@ class AppInitViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            // Fetch site settings in parallel with auth restore and Room warmup
             val settingsDeferred = async {
                 runCatching { siteSettingsRepository.getSettings() }.getOrDefault(SiteSettings())
             }

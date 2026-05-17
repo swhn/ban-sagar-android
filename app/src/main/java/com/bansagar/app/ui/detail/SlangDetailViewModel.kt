@@ -1,13 +1,13 @@
-package com.bansagar.app.ui.detail
+package com.madebysai.bansagar.ui.detail
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bansagar.app.data.model.Slang
-import com.bansagar.app.data.preferences.UserPreferencesRepository
-import com.bansagar.app.domain.repository.AuthRepository
-import com.bansagar.app.domain.repository.SlangRepository
-import com.bansagar.app.domain.repository.VoteRepository
+import com.madebysai.bansagar.data.model.Slang
+import com.madebysai.bansagar.data.preferences.UserPreferencesRepository
+import com.madebysai.bansagar.domain.repository.AuthRepository
+import com.madebysai.bansagar.domain.repository.SlangRepository
+import com.madebysai.bansagar.domain.repository.VoteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

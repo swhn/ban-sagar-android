@@ -1,4 +1,4 @@
-package com.bansagar.app.ui.navigation
+package com.madebysai.bansagar.ui.navigation
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
@@ -36,7 +36,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.bansagar.app.R
+import com.madebysai.bansagar.R
 
 data class BottomNavItem(
     val route: String,
