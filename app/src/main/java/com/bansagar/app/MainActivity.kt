@@ -19,6 +19,14 @@ import com.bansagar.app.data.preferences.UserPreferencesRepository
 import com.bansagar.app.service.BanSagarMessagingService
 import com.bansagar.app.ui.navigation.AppNavigation
 import com.bansagar.app.ui.theme.BanSagarTheme
+import com.google.android.play.core.appupdate.AppUpdateManager
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.appupdate.AppUpdateOptions
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.InstallStatus
+import com.google.android.play.core.install.model.UpdateAvailability
+import com.google.android.play.core.ktx.isFlexibleUpdateAllowed
+import com.google.android.play.core.ktx.isImmediateUpdateAllowed
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
@@ -30,9 +38,15 @@ class MainActivity : ComponentActivity() {
 
     @Inject lateinit var prefs: UserPreferencesRepository
 
+    private lateinit var appUpdateManager: AppUpdateManager
+
     private val requestNotificationPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { }
+
+    private val updateLauncher = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) { /* flexible update cancellation is non-critical; ignored */ }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -41,11 +55,46 @@ class MainActivity : ComponentActivity() {
         maybeRequestNotificationPermission()
         createNotificationChannels()
         syncWotdSubscription()
+        appUpdateManager = AppUpdateManagerFactory.create(this)
+        checkForAppUpdate()
         setContent {
             val themeMode by prefs.themeMode.collectAsStateWithLifecycle(initialValue = ThemeMode.SYSTEM)
             BanSagarTheme(themeMode = themeMode) {
                 AppNavigation()
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // If a flexible update finished downloading while the user was in the app,
+        // trigger the install confirmation overlay.
+        if (::appUpdateManager.isInitialized) {
+            appUpdateManager.appUpdateInfo.addOnSuccessListener { info ->
+                if (info.installStatus() == InstallStatus.DOWNLOADED) {
+                    appUpdateManager.completeUpdate()
+                }
+            }
+        }
+    }
+
+    private fun checkForAppUpdate() {
+        appUpdateManager.appUpdateInfo.addOnSuccessListener { info ->
+            if (info.updateAvailability() != UpdateAvailability.UPDATE_AVAILABLE) return@addOnSuccessListener
+
+            // Priority 4+ in Play Console triggers an immediate (blocking) update.
+            // Everything else uses a flexible (background download) update.
+            val updateType = when {
+                info.updatePriority() >= 4 && info.isImmediateUpdateAllowed -> AppUpdateType.IMMEDIATE
+                info.isFlexibleUpdateAllowed -> AppUpdateType.FLEXIBLE
+                else -> return@addOnSuccessListener
+            }
+
+            appUpdateManager.startUpdateFlowForResult(
+                info,
+                updateLauncher,
+                AppUpdateOptions.newBuilder(updateType).build(),
+            )
         }
     }
 
