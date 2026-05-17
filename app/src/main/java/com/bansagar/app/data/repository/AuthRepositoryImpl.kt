@@ -1,10 +1,10 @@
-package com.bansagar.app.data.repository
+package com.madebysai.bansagar.data.repository
 
 import android.content.Context
 import android.util.Log
-import com.bansagar.app.BuildConfig
-import com.bansagar.app.data.model.AppUser
-import com.bansagar.app.domain.repository.AuthRepository
+import com.madebysai.bansagar.BuildConfig
+import com.madebysai.bansagar.data.model.AppUser
+import com.madebysai.bansagar.domain.repository.AuthRepository
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.NoCredentialException
@@ -56,8 +56,6 @@ class AuthRepositoryImpl @Inject constructor(
         return try {
             val credentialManager = CredentialManager.create(activityContext)
 
-            // Two-pass: first try only previously-authorized accounts (silent UX),
-            // then fall back to the full account picker.
             val idToken = runCatching {
                 getIdToken(credentialManager, activityContext, filterByAuthorized = true)
             }.getOrElse { firstErr ->
@@ -78,9 +76,6 @@ class AuthRepositoryImpl @Inject constructor(
 
             val profile = ensureProfile(userId)
 
-            // Upload current FCM token so notifications work immediately after sign-in.
-            // onNewToken fires on install before the user is authenticated, so the token
-            // would otherwise only be stored on the next token rotation.
             try {
                 val fcmToken = FirebaseMessaging.getInstance().token.await()
                 client.from("users").update(buildJsonObject { put("fcm_token", fcmToken) }) {

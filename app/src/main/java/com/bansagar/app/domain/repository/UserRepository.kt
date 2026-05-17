@@ -1,7 +1,7 @@
-package com.bansagar.app.domain.repository
+package com.madebysai.bansagar.domain.repository
 
-import com.bansagar.app.data.model.AppUser
-import com.bansagar.app.data.model.UserStats
+import com.madebysai.bansagar.data.model.AppUser
+import com.madebysai.bansagar.data.model.UserStats
 
 interface UserRepository {
     suspend fun getProfile(userId: String): AppUser?

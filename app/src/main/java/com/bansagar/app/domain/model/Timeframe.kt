@@ -1,4 +1,4 @@
-package com.bansagar.app.domain.model
+package com.madebysai.bansagar.domain.model
 
 enum class Timeframe {
     Day, Week, Month, Year;

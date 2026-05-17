@@ -1,6 +1,6 @@
-package com.bansagar.app.domain.repository
+package com.madebysai.bansagar.domain.repository
 
-import com.bansagar.app.data.model.SiteSettings
+import com.madebysai.bansagar.data.model.SiteSettings
 
 interface SiteSettingsRepository {
     suspend fun getSettings(): SiteSettings

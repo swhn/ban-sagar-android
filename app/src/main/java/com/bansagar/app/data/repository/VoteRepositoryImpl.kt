@@ -1,7 +1,7 @@
-package com.bansagar.app.data.repository
+package com.madebysai.bansagar.data.repository
 
-import com.bansagar.app.data.model.Vote
-import com.bansagar.app.domain.repository.VoteRepository
+import com.madebysai.bansagar.data.model.Vote
+import com.madebysai.bansagar.domain.repository.VoteRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest

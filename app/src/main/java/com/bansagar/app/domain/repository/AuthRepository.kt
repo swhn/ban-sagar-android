@@ -1,7 +1,7 @@
-package com.bansagar.app.domain.repository
+package com.madebysai.bansagar.domain.repository
 
 import android.content.Context
-import com.bansagar.app.data.model.AppUser
+import com.madebysai.bansagar.data.model.AppUser
 import kotlinx.coroutines.flow.Flow
 
 interface AuthRepository {

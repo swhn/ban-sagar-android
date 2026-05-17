@@ -1,6 +1,6 @@
-package com.bansagar.app.domain.repository
+package com.madebysai.bansagar.domain.repository
 
-import com.bansagar.app.data.model.ContributorStats
+import com.madebysai.bansagar.data.model.ContributorStats
 
 interface LeaderboardRepository {
     suspend fun getContributors(): List<ContributorStats>

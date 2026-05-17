@@ -1,7 +1,7 @@
-package com.bansagar.app.data.repository
+package com.madebysai.bansagar.data.repository
 
-import com.bansagar.app.data.model.ContributorStats
-import com.bansagar.app.domain.repository.LeaderboardRepository
+import com.madebysai.bansagar.data.model.ContributorStats
+import com.madebysai.bansagar.domain.repository.LeaderboardRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import kotlinx.serialization.SerialName

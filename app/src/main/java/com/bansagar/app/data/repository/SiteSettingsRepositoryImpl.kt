@@ -1,7 +1,7 @@
-package com.bansagar.app.data.repository
+package com.madebysai.bansagar.data.repository
 
-import com.bansagar.app.data.model.SiteSettings
-import com.bansagar.app.domain.repository.SiteSettingsRepository
+import com.madebysai.bansagar.data.model.SiteSettings
+import com.madebysai.bansagar.domain.repository.SiteSettingsRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import kotlinx.serialization.Serializable
@@ -16,7 +16,6 @@ class SiteSettingsRepositoryImpl @Inject constructor(
 
     override suspend fun getSettings(): SiteSettings {
         return try {
-            // site_settings uses a key-value row schema: each setting is a separate row
             val rows = client.from("site_settings")
                 .select()
                 .decodeList<KeyValue>()

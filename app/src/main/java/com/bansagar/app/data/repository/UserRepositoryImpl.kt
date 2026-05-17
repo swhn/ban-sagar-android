@@ -1,9 +1,9 @@
-package com.bansagar.app.data.repository
+package com.madebysai.bansagar.data.repository
 
-import com.bansagar.app.data.model.AppUser
-import com.bansagar.app.data.model.Slang
-import com.bansagar.app.data.model.UserStats
-import com.bansagar.app.domain.repository.UserRepository
+import com.madebysai.bansagar.data.model.AppUser
+import com.madebysai.bansagar.data.model.Slang
+import com.madebysai.bansagar.data.model.UserStats
+import com.madebysai.bansagar.domain.repository.UserRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import kotlinx.serialization.json.buildJsonObject
@@ -68,6 +68,6 @@ class UserRepositoryImpl @Inject constructor(
             ) {
                 filter { eq("id", userId) }
             }
-        } catch (_: Exception) { /* non-critical; token will sync on next token rotation */ }
+        } catch (_: Exception) { }
     }
 }

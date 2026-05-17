@@ -1,7 +1,7 @@
-package com.bansagar.app.domain.repository
+package com.madebysai.bansagar.domain.repository
 
-import com.bansagar.app.data.model.Slang
-import com.bansagar.app.data.model.SlangSubmission
+import com.madebysai.bansagar.data.model.Slang
+import com.madebysai.bansagar.data.model.SlangSubmission
 
 interface ContributeRepository {
     suspend fun submitSlang(submission: SlangSubmission): Slang

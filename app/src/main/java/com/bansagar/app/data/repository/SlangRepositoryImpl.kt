@@ -1,11 +1,11 @@
-package com.bansagar.app.data.repository
+package com.madebysai.bansagar.data.repository
 
-import com.bansagar.app.data.local.SlangDao
-import com.bansagar.app.data.local.toEntity
-import com.bansagar.app.data.local.toSlang
-import com.bansagar.app.data.model.Slang
-import com.bansagar.app.domain.model.Timeframe
-import com.bansagar.app.domain.repository.SlangRepository
+import com.madebysai.bansagar.data.local.SlangDao
+import com.madebysai.bansagar.data.local.toEntity
+import com.madebysai.bansagar.data.local.toSlang
+import com.madebysai.bansagar.data.model.Slang
+import com.madebysai.bansagar.domain.model.Timeframe
+import com.madebysai.bansagar.domain.repository.SlangRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
@@ -176,7 +176,6 @@ class SlangRepositoryImpl(
 
     override suspend fun getWordOfTheDay(): Slang? {
         return try {
-            // Use cached slangs if available; fall back to network fetch.
             var slangs = dao.getAll().map { it.toSlang() }.filter { it.status == "approved" }
             if (slangs.isEmpty()) {
                 slangs = client.from("slangs").select {
@@ -186,7 +185,6 @@ class SlangRepositoryImpl(
                 }
             }
             if (slangs.isEmpty()) return null
-            // Deterministic pick: sort by id so every device picks the same word.
             val sorted = slangs.sortedBy { it.id }
             val epochDay = LocalDate.now(ZoneOffset.UTC).toEpochDay()
             sorted[(epochDay % sorted.size).toInt()]

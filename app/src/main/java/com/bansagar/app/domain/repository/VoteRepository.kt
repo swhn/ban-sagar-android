@@ -1,4 +1,4 @@
-package com.bansagar.app.domain.repository
+package com.madebysai.bansagar.domain.repository
 
 interface VoteRepository {
     suspend fun getUserVote(userId: String, slangId: String): String?
