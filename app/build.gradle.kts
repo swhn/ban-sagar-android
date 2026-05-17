@@ -116,6 +116,7 @@ dependencies {
     // Firebase (BOM keeps all versions aligned)
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-messaging-ktx")
+    implementation("com.google.firebase:firebase-inappmessaging-display-ktx")
 
     // Play In-App Updates
     implementation("com.google.android.play:app-update-ktx:2.1.0")
