@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1026633817495",
+    "project_id": "ban-sagar",
+    "storage_bucket": "ban-sagar.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1026633817495:android:5ce01e201688678c5838d2",
+        "android_client_info": {
+          "package_name": "com.bansagar.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzSXMB84nKuPjoNH4N1yVfEOeQPGooGq4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1026633817495:android:5f2b79246637eae75838d2",
+        "android_client_info": {
+          "package_name": "com.madebysai.bansagar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzSXMB84nKuPjoNH4N1yVfEOeQPGooGq4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
