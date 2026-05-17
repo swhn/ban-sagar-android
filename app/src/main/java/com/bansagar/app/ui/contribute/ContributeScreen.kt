@@ -1,4 +1,4 @@
-package com.bansagar.app.ui.contribute
+package com.madebysai.bansagar.ui.contribute
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -58,9 +58,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bansagar.app.R
-import com.bansagar.app.data.model.Slang
-import com.bansagar.app.ui.auth.AuthViewModel
+import com.madebysai.bansagar.R
+import com.madebysai.bansagar.data.model.Slang
+import com.madebysai.bansagar.ui.auth.AuthViewModel
 
 private val Amber400 = Color(0xFFFBBF24)
 private val Amber500 = Color(0xFFF59E0B)

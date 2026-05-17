@@ -1,4 +1,4 @@
-package com.bansagar.app.ui.detail
+package com.madebysai.bansagar.ui.detail
 
 import android.content.Intent
 import androidx.compose.foundation.background
@@ -52,7 +52,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bansagar.app.R
+import com.madebysai.bansagar.R
 
 private val Rose400 = Color(0xFFFB7185)
 

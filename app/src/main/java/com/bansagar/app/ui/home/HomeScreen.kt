@@ -1,4 +1,4 @@
-package com.bansagar.app.ui.home
+package com.madebysai.bansagar.ui.home
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -66,11 +66,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bansagar.app.R
-import com.bansagar.app.data.model.Slang
-import com.bansagar.app.domain.model.Timeframe
-import com.bansagar.app.ui.components.SlangCard
-import com.bansagar.app.ui.theme.Indigo500
+import com.madebysai.bansagar.R
+import com.madebysai.bansagar.data.model.Slang
+import com.madebysai.bansagar.domain.model.Timeframe
+import com.madebysai.bansagar.ui.components.SlangCard
+import com.madebysai.bansagar.ui.theme.Indigo500
 import kotlinx.coroutines.launch
 
 private val Amber400 = Color(0xFFFBBF24)
@@ -106,7 +106,7 @@ fun HomeScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        // ── Header ───────────────────────────────────────────────────────────────────────
+        // ── Header ──────────────────────────────────────────────────────────────────────────────────
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -125,7 +125,7 @@ fun HomeScreen(
             )
         }
 
-        // ── Word of the Day card ──────────────────────────────────────────────────────────
+        // ── Word of the Day card ───────────────────────────────────────────────────────────────────────────
         AnimatedVisibility(
             visible = state.wordOfTheDay != null,
             enter = expandVertically() + fadeIn(tween(300)),
@@ -139,7 +139,7 @@ fun HomeScreen(
             }
         }
 
-        // ── Sort tab row ─────────────────────────────────────────────────────────────────
+        // ── Sort tab row ─────────────────────────────────────────────────────────────────────────────────────
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -168,7 +168,7 @@ fun HomeScreen(
             }
         }
 
-        // ── Timeframe sub-tab row (Trending only) ────────────────────────────────────────
+        // ── Timeframe sub-tab row (Trending only) ────────────────────────────────────────────────────────────────────
         AnimatedVisibility(
             visible = tabs.getOrElse(pagerState.currentPage) { state.activeTab } == SortTab.Trending,
             enter = expandVertically() + fadeIn(tween(180)),
@@ -196,7 +196,7 @@ fun HomeScreen(
             }
         }
 
-        // ── Swipeable content pager ───────────────────────────────────────────────────────
+        // ── Swipeable content pager ───────────────────────────────────────────────────────────────────────────────────
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),
@@ -216,7 +216,7 @@ fun HomeScreen(
     }
 }
 
-// ── Tab content ──────────────────────────────────────────────────────────────────────────────────
+// ── Tab content ─────────────────────────────────────────────────────────────────────────────────────────
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -292,7 +292,7 @@ private fun TabContent(
     }
 }
 
-// ── Word of the Day card ─────────────────────────────────────────────────────────────────────────
+// ── Word of the Day card ─────────────────────────────────────────────────────────────────────────────────────────
 
 @Composable
 private fun WordOfTheDayCard(slang: Slang, onClick: () -> Unit) {
@@ -345,7 +345,7 @@ private fun WordOfTheDayCard(slang: Slang, onClick: () -> Unit) {
     }
 }
 
-// ── Tab components ───────────────────────────────────────────────────────────────────────────────
+// ── Tab components ───────────────────────────────────────────────────────────────────────────────────────────
 
 @Composable
 private fun SortTabPill(

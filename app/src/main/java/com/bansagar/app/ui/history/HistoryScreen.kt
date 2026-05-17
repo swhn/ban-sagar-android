@@ -1,4 +1,4 @@
-package com.bansagar.app.ui.history
+package com.madebysai.bansagar.ui.history
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
@@ -38,8 +38,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bansagar.app.R
-import com.bansagar.app.ui.components.SlangCard
+import com.madebysai.bansagar.R
+import com.madebysai.bansagar.ui.components.SlangCard
 
 private val Emerald400 = Color(0xFF34D399)
 private val Amber400 = Color(0xFFFBBF24)
