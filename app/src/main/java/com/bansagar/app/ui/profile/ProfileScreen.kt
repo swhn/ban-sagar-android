@@ -1,4 +1,4 @@
-package com.bansagar.app.ui.profile
+package com.madebysai.bansagar.ui.profile
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -72,9 +72,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.bansagar.app.R
-import com.bansagar.app.data.preferences.ThemeMode
-import com.bansagar.app.ui.auth.AuthViewModel
+import com.madebysai.bansagar.R
+import com.madebysai.bansagar.data.preferences.ThemeMode
+import com.madebysai.bansagar.ui.auth.AuthViewModel
 import kotlinx.coroutines.delay
 
 private val Emerald400 = Color(0xFF34D399)
@@ -119,7 +119,7 @@ fun ProfileScreen(
         )
     }
 
-    // ── Signed-out ─────────────────────────────────────────────────────────────
+    // ── Signed-out ──────────────────────────────────────────────────────────────────────────
     if (!state.isLoading && state.user == null) {
         Column(
             modifier = Modifier
@@ -203,7 +203,7 @@ fun ProfileScreen(
         return
     }
 
-    // ── Signed-in ──────────────────────────────────────────────────────────────
+    // ── Signed-in ────────────────────────────────────────────────────────────────────────────
     val user = state.user ?: return
 
     Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
@@ -356,7 +356,7 @@ fun ProfileScreen(
     }
 }
 
-// ── Shared sub-components ───────────────────────────────────────────────────
+// ── Shared sub-components ───────────────────────────────────────────────────────────────────────
 
 @Composable
 private fun LeaderboardRow(

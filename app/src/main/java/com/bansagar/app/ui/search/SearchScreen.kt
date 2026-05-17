@@ -1,4 +1,4 @@
-package com.bansagar.app.ui.search
+package com.madebysai.bansagar.ui.search
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,8 +29,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bansagar.app.R
-import com.bansagar.app.ui.components.SlangCard
+import com.madebysai.bansagar.R
+import com.madebysai.bansagar.ui.components.SlangCard
 
 @Composable
 fun SearchScreen(

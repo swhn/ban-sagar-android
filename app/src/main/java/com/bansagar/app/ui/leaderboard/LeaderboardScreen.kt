@@ -1,4 +1,4 @@
-package com.bansagar.app.ui.leaderboard
+package com.madebysai.bansagar.ui.leaderboard
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
@@ -55,12 +55,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.bansagar.app.R
-import com.bansagar.app.data.model.AppUser
-import com.bansagar.app.data.model.ContributorStats
-import com.bansagar.app.domain.model.ACHIEVEMENTS
-import com.bansagar.app.domain.model.Achievement
-import com.bansagar.app.domain.model.AchievementTier
+import com.madebysai.bansagar.R
+import com.madebysai.bansagar.data.model.AppUser
+import com.madebysai.bansagar.data.model.ContributorStats
+import com.madebysai.bansagar.domain.model.ACHIEVEMENTS
+import com.madebysai.bansagar.domain.model.Achievement
+import com.madebysai.bansagar.domain.model.AchievementTier
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

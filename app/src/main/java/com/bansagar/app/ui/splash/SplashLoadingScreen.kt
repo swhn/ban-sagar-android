@@ -1,4 +1,4 @@
-package com.bansagar.app.ui.splash
+package com.madebysai.bansagar.ui.splash
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -30,7 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.bansagar.app.R
+import com.madebysai.bansagar.R
 
 private val BrandIndigo = Color(0xFF6366F1)
 private val BrandDark = Color(0xFF06060B)
